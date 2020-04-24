@@ -14,7 +14,9 @@ SITE_STRING = "https://{base_url}/{query_params}"
 def run(url: str) -> dict:
     messages = []
     r = url_response(messages, url)
-
+    if r == None:
+        messages.append("got response of None, exiting")
+        return messages
     try:
         soup = BeautifulSoup(r.content, "html.parser")
         links = soup.body.findAll("a")
