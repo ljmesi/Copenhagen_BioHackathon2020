@@ -13,12 +13,21 @@ SITE_STRING = "https://{base_url}/{query_params}"
 
 def run(url: str) -> dict:
     messages = []
-    r = url_response(messages, url)
-    if r == None:
+
+    initial_response = url_response(messages, url)
+
+    if initial_response is None:
         messages.append("got response of None, exiting")
-        return messages
+        return {"messages": messages}
+
+    append_bs_parsing(messages, initial_response)
+    append_selenium_parsing(messages, url)
+    return {"messages": messages}
+
+
+def append_bs_parsing(messages, initial_response):
     try:
-        soup = BeautifulSoup(r.content, "html.parser")
+        soup = BeautifulSoup(initial_response.content, "html.parser")
         links = soup.body.findAll("a")
         hrefs = []
         for link in links:
@@ -30,11 +39,35 @@ def run(url: str) -> dict:
             if searchObj:
                 hrefs_reg.append(searchObj.group())
 
-        messages.append({"soup": "parsed", "links": hrefs, "urls": hrefs_reg})
+        messages.append({"soup": "parsed",
+                         "links": hrefs,
+                         "urls": hrefs_reg})
     except:
         soup = {"status": "failed to parse"}
         messages.append({"soup": soup, "exception": traceback.format_exc()})
-    return {"messages": messages}
+
+def append_selenium_parsing(messages, url):
+    try:
+        messages.append({"selenium": "parsed",
+                     "links": prepare_selenium_response(url)})
+    except:
+        selenium = {"status": "failed to parse"}
+        messages.append({"selenium": selenium, "exception": traceback.format_exc()})
+
+def prepare_selenium_response(url:str)->list:
+    #TODO:cleanup webdriver methods
+    from selenium import webdriver
+    driver = webdriver.Firefox()
+    driver.get(url)
+    driver.implicitly_wait(30)
+    elements = driver.find_elements_by_class_name("item-thumb-card")
+    # selenium_links = driver.execute_script('var bob = document.getElementsByClassName("item-thumb-card")``V;Object.keys(bob).forEach(function(a){bob[a].childNodes.forEach(function(b){return b.attributes})})')
+    # selenium_links = driver.execute_script('var items = {};Object.keys(items).forEach(function(attrs){console.log(item[attrs]);return items[attrs];});', element)
+    selenium_links = []
+    # for element in elements:
+    java_script = 'var items = document.getElementsByClassName("item-thumb-card");var n = [];for (i=0; i < items.length;i++){var temp = items[i].childNodes[0].getAttribute("href");console.log(temp);n.push(temp);};return n;'
+    selenium_links.append(driver.execute_script(java_script, None))
+    return [x for x in selenium_links]
 
 
 def url_response(messages: list, url: str) -> requests.Response:
