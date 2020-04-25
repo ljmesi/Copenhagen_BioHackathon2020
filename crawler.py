@@ -4,6 +4,7 @@ import json
 import re
 import traceback
 import time
+import pandas as pd
 
 import requests
 from bs4 import BeautifulSoup
@@ -70,9 +71,11 @@ def prepare_selenium_response(url: str, args: argparse.Namespace) -> list:
     driver.implicitly_wait(DEFAULT_IMPLICIT_WAIT_TIME)
     accept_cookies(driver)
 
-    scroll_to_bottom_and_get_links(driver)
-    links = driver.find_elements_by_xpath(FIGSHARE_ANCHOR_XPATH)
-    return [x.get_attribute('href') for x in links]
+    links = scroll_to_bottom_and_get_links(driver)
+    if links:
+        print("parsing link hrefs")
+        return [x.get_attribute('href') for x in links]
+    return []
 
 
 def accept_cookies(driver) -> None:
@@ -85,19 +88,18 @@ def accept_cookies(driver) -> None:
 def scroll_to_bottom_and_get_links(driver) -> list:
     links_found = get_links_in_browser(driver, [])
     seed_height = driver.execute_script("return document.body.scrollHeight")
-    links = scroll_down_finding_links(driver, seed_height, links_found)
-    if links:
-        for link in links: links_found.append(link)
-    return links_found
+    return scroll_down_finding_links(driver, seed_height, links_found)
 
 
 def scroll_down_finding_links(driver, height, links_found) -> list:
     driver.execute_script("scroll(0, 250);")
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
     links_found = get_links_in_browser(driver, links_found)
+    print("new links found: ", len(links_found))
     driver.implicitly_wait(INFINI_SCROLL_WAIT_TIME)
     executed_height = driver.execute_script("return document.body.scrollHeight")
     if executed_height == height:
+        print("final link total: ", str(len(links_found)))
         return links_found
     print("scrolling to bottom, current height: {}, previous height: {}".format(executed_height, height))
     time.sleep(INFINI_SCROLL_WAIT_TIME)
@@ -167,12 +169,17 @@ def parse_secondary_link(links: list, browser) -> None:
 
 def url_response(messages: list, url: str) -> requests.Response:
     try:
-        # TODO: auth, handle exceptions
         response = requests.get(url, )
         messages.append("request to: url produced: {}".format(url, str(response.status_code)))
         return response
     except Exception as e:
         messages.append("initial request failed, error: {}".format(e))
+
+
+def output_pandas_csv(data: dict, args) -> None:
+    if 'output_location' in args:
+        dataframe = pd.DataFrame(data)
+        dataframe.to_csv(args.output_location)
 
 
 def main(args: argparse.Namespace) -> None:
@@ -190,5 +197,6 @@ if __name__ == "__main__":
     parser.add_argument('--url', type=str, required=True)
     parser.add_argument('--webdriver', type=str, choices=["chrome", "firefox"], required=True)
     parser.add_argument('--webdriver_location', type=str, required=False)
+    parser.add_argument('--output_location', type=str, required=False)
     args = parser.parse_args()
     main(args)
