@@ -34,7 +34,7 @@ def run(url: str) -> dict:
     append_bs_parsing(messages, initial_response)
     append_selenium_parsing(messages, url, args)
     parse_secondary_links(messages, args)
-    # output_pandas_csv()
+    output_pandas_csv(args)
     return {"messages": messages}
 
 
@@ -216,11 +216,33 @@ def url_response(messages: list, url: str) -> requests.Response:
         messages.append("initial request failed, error: {}".format(e))
 
 
-def output_pandas_csv(data: dict, args) -> None:
+def output_pandas_csv(args) -> None:
     if 'output_location' in args:
+        data = build_panda_data_dict()
+        for study in PARSED_STUDY_PARAMS:
+            update_data_with_study(study, data)
         dataframe = pd.DataFrame(data)
         dataframe.to_csv(args.output_location)
 
+
+def build_panda_data_dict():
+    data = dict()
+    data['Title'] = []
+    data['Author'] = []
+    data['Categories'] = []
+    data['Keywords'] = []
+    data['Description'] = []
+    return data
+
+
+def update_data_with_study(study:StudyParameters, data:dict):
+    data['Title'].append(study.title)
+    if study.author_list:
+        data['Author'].append(study.author_list[0])
+    data['Categories'].append(study.categories)
+    data['Keywords'].append(study.keywords)
+    data['Description'].append(study.description)
+    return data
 
 def main(args: argparse.Namespace) -> None:
     url = args.url
