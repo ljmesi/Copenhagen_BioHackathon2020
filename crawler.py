@@ -22,6 +22,10 @@ FIGSHARE_SELENIUM_LINKS = []
 
 PARSED_STUDY_PARAMS = []
 
+#these limits are added just to test functionality, they will be removed
+PRIMARY_EXEC_LIMIT = 5
+
+SECONDARY_LINK_LIMIT = 2
 
 def run(url: str) -> dict:
     messages = []
@@ -33,8 +37,10 @@ def run(url: str) -> dict:
         return {"messages": messages}
 
     append_bs_parsing(messages, initial_response)
-    append_selenium_parsing(messages, url, args)
-    parse_secondary_links(messages, args)
+    if args.use_selenium:
+        append_selenium_parsing(messages, url, args)
+    if args.parse_secondary:
+        parse_secondary_links(messages, args)
     output_pandas_csv(args)
     return {"messages": messages}
 
@@ -100,10 +106,12 @@ def accept_cookies(driver) -> None:
 
 def scroll_to_bottom_and_get_links(driver) -> None:
     seed_height = driver.execute_script("return document.body.scrollHeight")
-    scroll_down_finding_links(driver, seed_height)
+    scroll_down_finding_links(driver, seed_height, 0)
 
 
-def scroll_down_finding_links(driver, height) -> None:
+def scroll_down_finding_links(driver, height, run) -> None:
+    if run > PRIMARY_EXEC_LIMIT:
+        return
     driver.execute_script("scroll(0, 250);")
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
     get_links_in_browser(driver, 0)
@@ -113,7 +121,8 @@ def scroll_down_finding_links(driver, height) -> None:
         return
     print("scrolling to bottom, current height: {}, previous height: {}".format(executed_height, height))
     time.sleep(DEFAULT_INFINI_SCROLL_TIMEOUT)
-    scroll_down_finding_links(driver, executed_height)
+    run += 1
+    scroll_down_finding_links(driver, executed_height, run)
 
 
 def get_links_in_browser(driver, current_attempt: int) -> None:
@@ -144,7 +153,7 @@ def update_figshare_links(links_found):
 def parse_secondary_links(messages: list, args: argparse.Namespace) -> None:
     try:
         links = FIGSHARE_SELENIUM_LINKS
-        for link in links:
+        for link in links[:SECONDARY_LINK_LIMIT]:
             parse_secondary_figshare_url(link, args, 0)
         study_params = [str(x) for x in PARSED_STUDY_PARAMS]
         print(study_params)
@@ -263,5 +272,7 @@ if __name__ == "__main__":
     parser.add_argument('--webdriver', type=str, choices=["chrome", "firefox"], required=True)
     parser.add_argument('--webdriver_location', type=str, required=False)
     parser.add_argument('--output_location', type=str, required=False)
+    parser.add_argument('--use_selenium', action="store_true", default=False)
+    parser.add_argument('--parse_secondary', action="store_true", default=False)
     args = parser.parse_args()
     main(args)
