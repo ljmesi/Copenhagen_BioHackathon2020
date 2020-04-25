@@ -78,6 +78,7 @@ def prepare_selenium_response(url: str, args: argparse.Namespace) -> None:
     accept_cookies(driver)
 
     scroll_to_bottom_and_get_links(driver)
+    driver.close()
 
 
 def accept_cookies(driver) -> None:
@@ -153,34 +154,11 @@ def build_webdriver(args: argparse.Namespace):
 
 def parse_secondary_links(messages: list, args:argparse.Namespace) -> None:
     try:
-        browser = build_webdriver(args)
-        print("parsing secondary links")
-        normal_link_string = "//ul//a[@class = 'normal-link']"
-        title_xpath = "//h2[@class = 'title']"
-        author_xpath = "//a[@class = 'normal-link author']"
-        tag_section_xpath = "//div[@class = 'tags section']//a[@class = 'tag-wrap']"
         links = FIGSHARE_SELENIUM_LINKS
-        if links:
-            for link in links:
-                study = StudyParameters()
-                browser.get(link)
-                title = browser.find_element_by_xpath(title_xpath).text  # Extracting tittle of trayectory
-                author = browser.find_element_by_xpath(author_xpath).text  # EXtracting the author
-                study.add_authors(author)
-                study.add_title(title)
-                categories = browser.find_elements_by_xpath(normal_link_string)
-                for string in categories:
-                    filtered_string = string.text
-                    study.add_category(filtered_string)
-
-                keywords_list = []
-                tag_section = tag_section_xpath
-                keywords = browser.find_elements_by_xpath(tag_section)  # Same that for categories
-                for string in keywords:
-                    filtered_string = string.get_attribute("title")
-                    keywords_list.append(filtered_string)
-                PARSED_STUDY_PARAMS.append(study)
+        for link in links:
+            parse_secondary_figshare_url(link, args, 0)
         study_params = [str(x) for x in PARSED_STUDY_PARAMS]
+        print(study_params)
         messages.append({"secondary": "parsed",
                          "study_params": study_params,
                          "total": str(len(study_params))})
@@ -188,6 +166,45 @@ def parse_secondary_links(messages: list, args:argparse.Namespace) -> None:
         secondary = {"status": "failed to parse"}
         messages.append({"secondary": secondary, "exception": traceback.format_exc()})
 
+
+def parse_secondary_figshare_url(link, args, attempts):
+    browser = build_webdriver(args)
+    print("parsing secondary links")
+    normal_link_string = "//ul//a[@class = 'normal-link']"
+    title_xpath = "//h2[@class = 'title']"
+    author_xpath = "//a[@class = 'normal-link author']"
+    tag_section_xpath = "//div[@class = 'tags section']//a[@class = 'tag-wrap']"
+    description_xpath = "//Div[@class = 'description section']"
+    try:
+        if attempts > 5:
+            print("giving up secondary parse")
+            return
+        if link:
+                study = StudyParameters(source_url=link)
+                browser.get(link)
+                title = browser.find_element_by_xpath(title_xpath).text  # Extracting tittle of trayectory
+                author = browser.find_element_by_xpath(author_xpath).text  # EXtracting the author
+                print("author:", author)
+                study.add_authors(author)
+                print("title:", title)
+                study.add_title(title)
+                categories = [x.text for x in browser.find_elements_by_xpath(normal_link_string)]
+                print("categories:", categories)
+                for category in categories:
+                    study.add_category(category)
+
+                keywords = [x.get_attribute("title") for x in browser.find_elements_by_xpath(tag_section_xpath)]
+                print("keywords:", keywords)
+                for keyword in keywords:
+                    study.add_keyword(keyword)
+                description = study.add_description(browser.find_element_by_xpath(description_xpath).text)
+                print(description)
+                PARSED_STUDY_PARAMS.append(study)
+    except Exception as e:
+        attempts += 1
+        print("couldn't parse study on attempt", attempts, " retrying...")
+        parse_secondary_figshare_url(link, args, attempts)
+    browser.close()
 
 
 def url_response(messages: list, url: str) -> requests.Response:
