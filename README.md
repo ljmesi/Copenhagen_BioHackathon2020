@@ -17,3 +17,5 @@ examples:
  - `python3 crawler.py --url 'https://covid.bioexcel.eu/simulations/' --webdriver firefox`
  -  `python3 crawler.py --url 'https://figshare.com/search?q=dcd&searchMode=1' --webdriver chrome --webdriver_location /opt/Downloads/chrome_driver/chromedriver --use_selenium --parse_secondary`
 
+ -  `python3 crawler.py --url 'https://figshare.com/search?q=dcd&searchMode=1' --webdriver chrome --webdriver_location /opt/Downloads/chrome_driver/chromedriver --use_selenium --parse_secondary --output_location .data/01_raw/Scraped/dcd_trayectories_figshare_data_1.csv`
+
