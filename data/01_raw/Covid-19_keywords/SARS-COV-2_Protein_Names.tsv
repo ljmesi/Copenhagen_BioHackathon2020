@@ -1,0 +1,25 @@
+ORF	Gene	Gene2	Full_Name	Function		Source	https://zhanglab.ccmb.med.umich.edu/COVID-19/
+ORF1AB	nsp1		Host translation inhibitor nsp1				
+ORF1AB	nsp2		Non-structural protein 2				
+ORF1AB	nps3		Papain-like proteinase				
+ORF1AB	nps4		Non-structural protein 4				
+ORF1AB	nsp5	3CL-PRO	3C-like proteinase				
+ORF1AB	nsp6		Non-structural protein 6				
+ORF1AB	nsp7		Non-structural protein 7				
+ORF1AB	nsp8		Non-structural protein 8				
+ORF1AB	nsp9		Non-structural protein 9				
+ORF1AB	nsp10		Non-structural protein 10				
+ORF1AB	RDRP		RNA-Directed RNA Polymerase				
+ORF1AB	Hel		Helicase				
+ORF1AB	Exon		Proofreading exoribonuclease (Guanine-N7 methyltransferase)				
+ORF1AB	NendoU		Uridylate-specific endoribonuclease				
+ORF1AB	2'-O-MT		2'-O-methyltransferase				
+S	Spike	Spike trimeric complex (S1, S2, S`)	Spike surface glycoprotein (monomer)				
+ORF3A			Protein 3a				
+E			Envelope small membrane proteins				
+M			Membrane protein				
+ORF6			Protein 6				
+ORF7A			Protein 7a				
+ORF8			Protein 8				
+N			Nucleoprotein				
+ORF10			3` UTR				

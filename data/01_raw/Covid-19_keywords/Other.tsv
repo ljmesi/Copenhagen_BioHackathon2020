@@ -1,0 +1,6 @@
+DiseaseNames	DataTypes	BindingTargets	MolecularDynamics
+ncov2019	Cartesian (XYZ)	ACE2	molecular dynamics
+covid19			trajectories
+covid-19			molecular docking
+sars-cov-2			dynamics simulation
+coronavirus			
