@@ -8,6 +8,14 @@ import time
 import requests
 from bs4 import BeautifulSoup
 
+FIGSHARE_COOKIE_XPATH = "//a[@class = 'simple-pink-button acceptCookies']"
+
+FIGSHARE_ANCHOR_XPATH = "//a[contains(@href,'https://') and @role = 'button' and @class = '']"
+
+INFINI_SCROLL_WAIT_TIME = 5
+
+DEFAULT_IMPLICIT_WAIT_TIME = 30
+
 
 def run(url: str) -> dict:
     messages = []
@@ -20,7 +28,7 @@ def run(url: str) -> dict:
 
     append_bs_parsing(messages, initial_response)
     append_selenium_parsing(messages, url, args)
-    #parse_secondary_link(driver)
+    # parse_secondary_link(driver)
     return {"messages": messages}
 
 
@@ -45,41 +53,64 @@ def append_bs_parsing(messages, initial_response):
         soup = {"status": "failed to parse"}
         messages.append({"soup": soup, "exception": traceback.format_exc()})
 
+
 def append_selenium_parsing(messages, url, args):
     try:
+        links = prepare_selenium_response(url, args)
         messages.append({"selenium": "parsed",
-                     "links": prepare_selenium_response(url, args)})
+                         "links": links})
     except:
         selenium = {"status": "failed to parse"}
         messages.append({"selenium": selenium, "exception": traceback.format_exc()})
 
-def prepare_selenium_response(url:str, args:argparse.Namespace)->list:
+
+def prepare_selenium_response(url: str, args: argparse.Namespace) -> list:
     driver = build_webdriver(args)
     driver.get(url)
-    driver.implicitly_wait(30)
-    cookie_string = "//a[@class = 'simple-pink-button acceptCookies']"
-    driver.find_element_by_xpath(cookie_string).click()  # Accepts cookies (important to be able to continue)
-    print("accepted cookies")
+    driver.implicitly_wait(DEFAULT_IMPLICIT_WAIT_TIME)
+    accept_cookies(driver)
 
-    #scroll_to_bottom(driver)
-    links = driver.find_elements_by_xpath("//a[contains(@href,'https://') and @role = 'button' and @class = '']")  # Sintax used to find the different links
-
+    scroll_to_bottom_and_get_links(driver)
+    links = driver.find_elements_by_xpath(FIGSHARE_ANCHOR_XPATH)
     return [x.get_attribute('href') for x in links]
 
-def scroll_to_bottom(driver):
-    seed_height = driver.execute_script("return document.body.scrollHeight")
-    scroll_down(driver, seed_height)
 
-def scroll_down(driver, height):
+def accept_cookies(driver) -> None:
+    cookie_string = FIGSHARE_COOKIE_XPATH
+    element = driver.find_element_by_xpath(cookie_string)
+    if element:
+        element.click()
+
+
+def scroll_to_bottom_and_get_links(driver) -> list:
+    links_found = get_links_in_browser(driver, [])
+    seed_height = driver.execute_script("return document.body.scrollHeight")
+    links = scroll_down_finding_links(driver, seed_height, links_found)
+    if links:
+        for link in links: links_found.append(link)
+    return links_found
+
+
+def scroll_down_finding_links(driver, height, links_found) -> list:
     driver.execute_script("scroll(0, 250);")
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
-    driver.implicitly_wait(5)
+    links_found = get_links_in_browser(driver, links_found)
+    driver.implicitly_wait(INFINI_SCROLL_WAIT_TIME)
     executed_height = driver.execute_script("return document.body.scrollHeight")
-    print(executed_height, height)
-    if (executed_height == height):
-        return
-    time.sleep(5)
-    scroll_down(driver, executed_height)
+    if executed_height == height:
+        return links_found
+    print("scrolling to bottom, current height: {}, previous height: {}".format(executed_height, height))
+    time.sleep(INFINI_SCROLL_WAIT_TIME)
+    scroll_down_finding_links(driver, executed_height, links_found)
+
+
+def get_links_in_browser(driver, link_list: list) -> list:
+    links = driver.find_elements_by_xpath(FIGSHARE_ANCHOR_XPATH)
+    if links:
+        for link in links:
+            if link not in link_list:
+                link_list.append(link)
+    return link_list
 
 
 def build_webdriver(args):
@@ -104,34 +135,35 @@ def build_webdriver(args):
     return driver
 
 
-def parse_secondary_link(links:list, browser) -> None:
+def parse_secondary_link(links: list, browser) -> None:
     print("parsing secondary links")
-    links_string = "//a[contains(@href,'https://') and @role = 'button' and @class = '']"
-    links = browser.find_elements_by_xpath(links_string)  # Sintax used to find the different links
+    links = browser.find_elements_by_xpath(FIGSHARE_ANCHOR_XPATH)
+    normal_link_string = "//ul//a[@class = 'normal-link']"
+    title_xpath = "//h2[@class = 'title']"
+    author_xpath = "//a[@class = 'normal-link author']"
+    tag_section_xpath = "//div[@class = 'tags section']//a[@class = 'tag-wrap']"
     if links:
         for link in links:
-            lnk = link.get_attribute('href')  # We have the individual URL at href class so we select it
+            lnk = link.get_attribute('href')
             browser.get(lnk)  # We go to the designated URL
-            title = browser.find_element_by_xpath("//h2[@class = 'title']").text  # Extracting tittle of trayectory
-            Author = browser.find_element_by_xpath("//a[@class = 'normal-link author']").text  # EXtracting the author
+            title = browser.find_element_by_xpath(title_xpath).text  # Extracting tittle of trayectory
+            author = browser.find_element_by_xpath(author_xpath).text  # EXtracting the author
 
-            Categories_list = []
-            normal_link_string = "//ul//a[@class = 'normal-link']"
-            Categories = browser.find_elements_by_xpath(
-                normal_link_string)  # Syntax used to identify the different links of categoreis that thee may appear
-            for string in Categories:
-                filtered_string = string.text  # THe string we want appears at the text part
-                Categories_list.append(filtered_string)
+            categories_list = []
+            categories = browser.find_elements_by_xpath(normal_link_string)
+            for string in categories:
+                filtered_string = string.text
+                categories_list.append(filtered_string)
 
-            Keywords_list = []
-            tag_secion = "//div[@class = 'tags section']//a[@class = 'tag-wrap']"
+            keywords_list = []
+            tag_secion = tag_section_xpath
             Keywords = browser.find_elements_by_xpath(
                 tag_secion)  # Same that for categories
             for string in Keywords:
-                filtered_string = string.get_attribute(
-                    "title")  # The string we are interested in appears at the tittle part of the node
-                Keywords_list.append(filtered_string)
-            print(title, "\n", Author, "\n", Categories_list, "\n", Keywords_list)
+                filtered_string = string.get_attribute("title")
+                keywords_list.append(filtered_string)
+            print(title, "\n", author, "\n", categories_list, "\n", keywords_list)
+
 
 def url_response(messages: list, url: str) -> requests.Response:
     try:
