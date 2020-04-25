@@ -1,11 +1,10 @@
-
-import sys
-sys.path.insert(0, 'usr/lib/chromium-browser/chromedriver')
-from selenium import webdriver
-chrome_options = webdriver.Chrome_options()
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--disable-dev-shm-usage')
+# import sys
+# sys.path.insert(0, 'usr/lib/chromium-browser/chromedriver')
+# from selenium import webdriver
+# chrome_options = webdriver.Chrome_options()
+# chrome_options.add_argument('--headless')
+# chrome_options.add_argument('--no-sandbox')
+# chrome_options.add_argument('--disable-dev-shm-usage')
 
 
 #####
@@ -17,7 +16,7 @@ import time
 
 URL1 = "https://figshare.com/search?q=.dcd&searchMode=1"
 
-browser = webdriver.Chrome('chromedriver',chrome_options=chrome_options)                        #Connects to chrome
+browser = webdriver.Chrome()                                                                    #Connects to chrome
 browser.get(URL1)                                                                               # Opens in chrome the URL
     
 time.sleep(2)
@@ -47,11 +46,16 @@ for link in links:                     #For each of the links nodes
         filtered_string = string.get_attribute("title")                                                 #The string we are interested in appears at the tittle part of the node
         Keywords_list.append(filtered_string)
 
-    print(title, "\n", Author, "\n", Categories_list, "\n", Keywords_list)
+    Description = browser.find_element_by_xpath("//Div[@class = 'description section']").text
+
+    print(title, "\n", Author, "\n", Categories_list, "\n", Keywords_list, Description)
 
     #Now it is left to improve some kind of dataframe or whatever
     break
-    
+
+
+
+
 
 
 
