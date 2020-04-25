@@ -203,7 +203,7 @@ def build_webdriver(args: argparse.Namespace):
         print("starting firefox driver")
         firefox_options = webdriver.FirefoxOptions()
         firefox_options.add_argument('--headless')
-        driver = webdriver.Firefox()
+        driver = webdriver.Firefox(firefox_options=firefox_options)
     elif args.webdriver == "chrome":
         print("starting chrome driver")
         if args.webdriver_location is None:
