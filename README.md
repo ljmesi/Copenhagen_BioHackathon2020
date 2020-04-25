@@ -11,4 +11,9 @@ To run the crawler:
 5) It is not required to use the selenium driver, but it will be required on many websites that render the content dynamically. For this I have started to use the gecko webdriver for python. You must install this locally on your environment if you wish to run this. As an example, if you use a mac, you can run brew install geckodriver. More information can be found here: https://github.com/mozilla/geckodriver
  or here: https://chromedriver.chromium.org/
 
-4) run the app with python3: e.g.: python3 crawler.py --url 'https://figshare.com/search?q=dcd&searchMode=1' --webdriver chrome --webdriver_location /opt/Downloads/chrome_driver/chromedriver
+4) run the app with python3: 
+
+examples:
+ - `python3 crawler.py --url 'https://covid.bioexcel.eu/simulations/' --webdriver firefox`
+ -  `python3 crawler.py --url 'https://figshare.com/search?q=dcd&searchMode=1' --webdriver chrome --webdriver_location /opt/Downloads/chrome_driver/chromedriver --use_selenium --parse_secondary`
+
