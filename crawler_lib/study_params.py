@@ -38,3 +38,6 @@ class StudyParameters:
     def add_category(self, category: str) -> None:
         if category not in self.categories:
             self.categories.append(category)
+
+    def __str__(self):
+        return self.__dict__

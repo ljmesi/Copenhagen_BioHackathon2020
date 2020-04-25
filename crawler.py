@@ -20,6 +20,7 @@ DEFAULT_IMPLICIT_WAIT_TIME = 30
 
 FIGSHARE_SELENIUM_LINKS = []
 
+PARSED_STUDY_PARAMS = []
 
 def run(url: str) -> dict:
     messages = []
@@ -32,7 +33,7 @@ def run(url: str) -> dict:
 
     append_bs_parsing(messages, initial_response)
     append_selenium_parsing(messages, url, args)
-    # parse_secondary_link(driver)
+    parse_secondary_links(messages, args)
     # output_pandas_csv()
     return {"messages": messages}
 
@@ -150,33 +151,43 @@ def build_webdriver(args: argparse.Namespace):
     return driver
 
 
-def parse_secondary_link(links: list, browser) -> None:
-    print("parsing secondary links")
-    links = browser.find_elements_by_xpath(FIGSHARE_ANCHOR_XPATH)
-    normal_link_string = "//ul//a[@class = 'normal-link']"
-    title_xpath = "//h2[@class = 'title']"
-    author_xpath = "//a[@class = 'normal-link author']"
-    tag_section_xpath = "//div[@class = 'tags section']//a[@class = 'tag-wrap']"
-    if links:
-        for link in links:
-            study = StudyParameters()
-            lnk = link.get_attribute('href')
-            browser.get(lnk)
-            title = browser.find_element_by_xpath(title_xpath).text  # Extracting tittle of trayectory
-            author = browser.find_element_by_xpath(author_xpath).text  # EXtracting the author
-            study.add_authors(author)
-            study.add_title(title)
-            categories = browser.find_elements_by_xpath(normal_link_string)
-            for string in categories:
-                filtered_string = string.text
-                study.add_category(filtered_string)
+def parse_secondary_links(messages: list, args:argparse.Namespace) -> None:
+    try:
+        browser = build_webdriver(args)
+        print("parsing secondary links")
+        normal_link_string = "//ul//a[@class = 'normal-link']"
+        title_xpath = "//h2[@class = 'title']"
+        author_xpath = "//a[@class = 'normal-link author']"
+        tag_section_xpath = "//div[@class = 'tags section']//a[@class = 'tag-wrap']"
+        links = FIGSHARE_SELENIUM_LINKS
+        if links:
+            for link in links:
+                study = StudyParameters()
+                browser.get(link)
+                title = browser.find_element_by_xpath(title_xpath).text  # Extracting tittle of trayectory
+                author = browser.find_element_by_xpath(author_xpath).text  # EXtracting the author
+                study.add_authors(author)
+                study.add_title(title)
+                categories = browser.find_elements_by_xpath(normal_link_string)
+                for string in categories:
+                    filtered_string = string.text
+                    study.add_category(filtered_string)
 
-            keywords_list = []
-            tag_section = tag_section_xpath
-            keywords = browser.find_elements_by_xpath(tag_section)  # Same that for categories
-            for string in keywords:
-                filtered_string = string.get_attribute("title")
-                keywords_list.append(filtered_string)
+                keywords_list = []
+                tag_section = tag_section_xpath
+                keywords = browser.find_elements_by_xpath(tag_section)  # Same that for categories
+                for string in keywords:
+                    filtered_string = string.get_attribute("title")
+                    keywords_list.append(filtered_string)
+                PARSED_STUDY_PARAMS.append(study)
+        study_params = [str(x) for x in PARSED_STUDY_PARAMS]
+        messages.append({"secondary": "parsed",
+                         "study_params": study_params,
+                         "total": str(len(study_params))})
+    except Exception as e:
+        secondary = {"status": "failed to parse"}
+        messages.append({"secondary": secondary, "exception": traceback.format_exc()})
+
 
 
 def url_response(messages: list, url: str) -> requests.Response:
