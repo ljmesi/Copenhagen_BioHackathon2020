@@ -22,6 +22,7 @@ FIGSHARE_SELENIUM_LINKS = []
 
 PARSED_STUDY_PARAMS = []
 
+
 def run(url: str) -> dict:
     messages = []
 
@@ -36,6 +37,15 @@ def run(url: str) -> dict:
     parse_secondary_links(messages, args)
     output_pandas_csv(args)
     return {"messages": messages}
+
+
+def url_response(messages: list, url: str) -> requests.Response:
+    try:
+        response = requests.get(url, )
+        messages.append("request to: url produced: {}".format(url, str(response.status_code)))
+        return response
+    except Exception as e:
+        messages.append("initial request failed, error: {}".format(e))
 
 
 def append_bs_parsing(messages, initial_response):
@@ -93,13 +103,6 @@ def scroll_to_bottom_and_get_links(driver) -> None:
     scroll_down_finding_links(driver, seed_height)
 
 
-def update_figshare_links(links_found):
-    for link in links_found:
-        link_string = link.get_attribute('href')
-        if link_string not in FIGSHARE_SELENIUM_LINKS:
-            FIGSHARE_SELENIUM_LINKS.append(link_string)
-
-
 def scroll_down_finding_links(driver, height) -> None:
     driver.execute_script("scroll(0, 250);")
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
@@ -118,6 +121,7 @@ def get_links_in_browser(driver, current_attempt: int) -> None:
         if current_attempt > 10:
             print("giving up!")
             return
+        # TODO:try to abstract the find element for anchor
         links = driver.find_elements_by_xpath(FIGSHARE_ANCHOR_XPATH)
         if links:
             update_figshare_links(links)
@@ -130,29 +134,14 @@ def get_links_in_browser(driver, current_attempt: int) -> None:
         get_links_in_browser(driver, current_attempt)
 
 
-def build_webdriver(args: argparse.Namespace):
-    from selenium import webdriver
-    driver = None
-    if args.webdriver == "firefox":
-        print("starting firefox driver")
-        firefox_options = webdriver.FirefoxOptions()
-        firefox_options.add_argument('--headless')
-        driver = webdriver.Firefox()
-    elif args.webdriver == "chrome":
-        print("starting chrome driver")
-        if args.webdriver_location is None:
-            print("webdriver file location required, please add...")
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument('--headless')
-        chrome_options.add_argument('--no-sandbox')
-        chrome_options.add_argument('--disable-dev-shm-usage')
-        driver = webdriver.Chrome(args.webdriver_location, chrome_options=chrome_options)
-    if driver is None:
-        print("could not build webdriver on localhost")
-    return driver
+def update_figshare_links(links_found):
+    for link in links_found:
+        link_string = link.get_attribute('href')
+        if link_string not in FIGSHARE_SELENIUM_LINKS:
+            FIGSHARE_SELENIUM_LINKS.append(link_string)
 
 
-def parse_secondary_links(messages: list, args:argparse.Namespace) -> None:
+def parse_secondary_links(messages: list, args: argparse.Namespace) -> None:
     try:
         links = FIGSHARE_SELENIUM_LINKS
         for link in links:
@@ -180,26 +169,26 @@ def parse_secondary_figshare_url(link, args, attempts):
             print("giving up secondary parse")
             return
         if link:
-                study = StudyParameters(source_url=link)
-                browser.get(link)
-                title = browser.find_element_by_xpath(title_xpath).text  # Extracting tittle of trayectory
-                author = browser.find_element_by_xpath(author_xpath).text  # EXtracting the author
-                print("author:", author)
-                study.add_authors(author)
-                print("title:", title)
-                study.add_title(title)
-                categories = [x.text for x in browser.find_elements_by_xpath(normal_link_string)]
-                print("categories:", categories)
-                for category in categories:
-                    study.add_category(category)
+            study = StudyParameters(source_url=link)
+            browser.get(link)
+            title = browser.find_element_by_xpath(title_xpath).text  # Extracting tittle of trayectory
+            author = browser.find_element_by_xpath(author_xpath).text  # EXtracting the author
+            print("author:", author)
+            study.add_authors(author)
+            print("title:", title)
+            study.add_title(title)
+            categories = [x.text for x in browser.find_elements_by_xpath(normal_link_string)]
+            print("categories:", categories)
+            for category in categories:
+                study.add_category(category)
 
-                keywords = [x.get_attribute("title") for x in browser.find_elements_by_xpath(tag_section_xpath)]
-                print("keywords:", keywords)
-                for keyword in keywords:
-                    study.add_keyword(keyword)
-                description = study.add_description(browser.find_element_by_xpath(description_xpath).text)
-                print(description)
-                PARSED_STUDY_PARAMS.append(study)
+            keywords = [x.get_attribute("title") for x in browser.find_elements_by_xpath(tag_section_xpath)]
+            print("keywords:", keywords)
+            for keyword in keywords:
+                study.add_keyword(keyword)
+            description = study.add_description(browser.find_element_by_xpath(description_xpath).text)
+            print(description)
+            PARSED_STUDY_PARAMS.append(study)
     except Exception as e:
         attempts += 1
         print("couldn't parse study on attempt", attempts, " retrying...")
@@ -207,13 +196,26 @@ def parse_secondary_figshare_url(link, args, attempts):
     browser.close()
 
 
-def url_response(messages: list, url: str) -> requests.Response:
-    try:
-        response = requests.get(url, )
-        messages.append("request to: url produced: {}".format(url, str(response.status_code)))
-        return response
-    except Exception as e:
-        messages.append("initial request failed, error: {}".format(e))
+def build_webdriver(args: argparse.Namespace):
+    from selenium import webdriver
+    driver = None
+    if args.webdriver == "firefox":
+        print("starting firefox driver")
+        firefox_options = webdriver.FirefoxOptions()
+        firefox_options.add_argument('--headless')
+        driver = webdriver.Firefox()
+    elif args.webdriver == "chrome":
+        print("starting chrome driver")
+        if args.webdriver_location is None:
+            print("webdriver file location required, please add...")
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        driver = webdriver.Chrome(args.webdriver_location, chrome_options=chrome_options)
+    if driver is None:
+        print("could not build webdriver on localhost")
+    return driver
 
 
 def output_pandas_csv(args) -> None:
@@ -225,7 +227,7 @@ def output_pandas_csv(args) -> None:
         dataframe.to_csv(args.output_location)
 
 
-def build_panda_data_dict():
+def build_panda_data_dict() -> dict:
     data = dict()
     data['Title'] = []
     data['Author'] = []
@@ -235,7 +237,7 @@ def build_panda_data_dict():
     return data
 
 
-def update_data_with_study(study:StudyParameters, data:dict):
+def update_data_with_study(study: StudyParameters, data: dict):
     data['Title'].append(study.title)
     if study.author_list:
         data['Author'].append(study.author_list[0])
@@ -243,6 +245,7 @@ def update_data_with_study(study:StudyParameters, data:dict):
     data['Keywords'].append(study.keywords)
     data['Description'].append(study.description)
     return data
+
 
 def main(args: argparse.Namespace) -> None:
     url = args.url
