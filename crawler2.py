@@ -1,12 +1,6 @@
 #!/usr/bin/env python3
-import argparse
 import sys
 import getopt
-import urllib
-import urllib.parse
-import urllib.request
-import bs4
-import urllib.parse as urlparse
 from bs4 import BeautifulSoup
 
 url_string = "NA"
