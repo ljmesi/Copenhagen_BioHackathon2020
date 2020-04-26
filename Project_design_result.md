@@ -2,11 +2,11 @@
 
 #### Project Description
 
-Molecular Dynamics (MD) simulation can document the structure of molecule(s) at atomistics resolution. Compared to genetic and static protein structure researches, there is no universal format for the input and output data as different simulation softwares may not be compatiable to each other. 
+Molecular Dynamics (MD) simulation can document the structure of the molecule(s) at atomistic resolution. Compared to genetic and static protein structure researches, there is no universal format for the input and output data as different simulation software may not be compatible to each other. 
 
-Within the same molecule, using different simulation parameters, e.g. force field, the simulation results will be different. MD simulation results are often uploaded by individual researchers to different scientific general-purpose data repositories without integration, harmonization and validation. There are increasing demand for geneating a beautiful "look-up table" by searching and formatting the MD simulation results for a group of proteins for interoperability and reusability.
+Within the same molecule, using different simulation parameters, e.g. force field, the simulation results will be different. MD simulation results are often uploaded by individual researchers to different scientific general-purpose data repositories without integration, harmonization and validation. Therefore, generating a beautiful "look-up table" by searching and formatting the MD simulation records for a group of proteins will help to improve the interoperability and reusability of the simulation research.
 
-This project aims to crawl Molecular Dynamic (MD) simulations available for proteins from different studies and database with efficiency. Based on the MD filename, abstract, readme, authors and simulation parameters, we will be able to cluster or select the proteins for different purposes, e.g. COVID-19 related proteins. The automatic pipeline has the potential to outperform the conventional manual selection method.
+This project aims to crawl Molecular Dynamic (MD) simulations available for proteins from different studies and databases with efficiency. Based on the MD filename, abstract, readme, authors and simulation parameters, we will be able to cluster or select the proteins for different purposes, e.g. COVID-19 related proteins. The automatic pipeline has the potential to outperform the conventional manual selection method.
 
 #### Code Example
 
