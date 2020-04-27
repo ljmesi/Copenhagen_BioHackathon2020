@@ -8,24 +8,25 @@ Within the same molecule, using different simulation parameters, e.g. force fiel
 
 This project aims to crawl Molecular Dynamic (MD) simulations available for proteins from different studies and databases with efficiency. Based on the MD filename, abstract, readme, authors and simulation parameters, we will be able to cluster or select the proteins for different purposes, e.g. COVID-19 related proteins. The automatic pipeline has the potential to outperform the conventional manual selection method.
 
+### Git Repository
+
+[Click here.](https://github.com/ljmesi/Copenhagen_BioHackathon2020) 
+
 #### Code Example
 
-```bash
+For crawling, check our app on GitHub
 
-```
+For the keyword selection part, check the  Jupyter notebook
 
 
 
 #### Current Progress 
 
-- [x] Crawl through **Figshare** for all MD files
-- [x] Pandas function to read the table and basic selection
-- [ ] Multi-threads performance improve
+- Crawl through **Figshare** for all MD files
+- Pandas function to read the table and basic selection
+- Multi-threads crawling performance improve
 
 #### Current Challenges
-
-### Git Repository
-[Click here.](https://github.com/ljmesi/Copenhagen_BioHackathon2020) 
 
 ### Team Members
 - Steven Garcia
