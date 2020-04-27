@@ -31,6 +31,7 @@ For the keyword selection part, check the  Jupyter notebook
 ### Team Members
 - Steven Garcia
 
+ I am a software engineer during the day and avid bioinformatics information seeker at night. I have Bachelors degree in chemistry and previously worked in several wet labs as an analytical chemist. I'm looking to better understand some of the tools used in research, and help out with Covid related topics.
 - Lauri Mesilaakso
 
  I am almost finished with an engineering degree in molecular biotechnology with specialisation in bioinformatics (Uppsala University, Sweden). I am familiar with Python, R, AWK. Bash and Perl but the area of web scraping is very new to me. I look very much forward to be able to contribute as much as I can and learn a lot during this Biohackathon.
