@@ -24,10 +24,22 @@ console.log("crawler starting ");
   })
   const page = await browser.newPage()
   await page.goto(argv.url)
-  const title = await page.title()
+  //const title = await page.title()
   if (argv.fmt) {
       console.log("output fmt: ", argv.fmt);
   }
-  console.log(title)
-  await browser.close()
+    let text = await page.$eval('*', el => el.innerText.split(' '));
+    text = text.map(string => {
+      return string.replace(/[^\w\s]/gi, '');
+    });
+    console.log("text:", text);
+
+      let hrefs = await page.evaluate(() => {
+          const links = Array.from(document.querySelectorAll('a'));
+          return links.map(link => link.href);
+      });
+    console.log("hrefs:", hrefs);
+    console.log('done');
+
+  await browser.close();
 })()
