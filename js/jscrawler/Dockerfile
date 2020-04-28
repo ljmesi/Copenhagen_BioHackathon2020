@@ -7,6 +7,11 @@ COPY package*.json ./
 
 RUN npm install
 
+COPY ./start.sh /
+
 COPY . .
 
-CMD [ "node", "crawler.js" ]
+RUN chmod 755 /start.sh
+
+#CMD [ "node", "crawler.js" ]
+ENTRYPOINT ["sh", "start.sh"]
