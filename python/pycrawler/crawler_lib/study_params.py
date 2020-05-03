@@ -9,7 +9,7 @@ class Protien:
 
 class StudyParameters:
     def __init__(self, source_url=None, title=None, description=None,
-                 protien_list=[], author_list=[], keywords=[], categories=[]):
+                 protien_list=[], author_list=[], keywords=[], categories=[], upload_date=None):
         self.description = description
         self.protein_list = protien_list
         self.author_list = author_list
@@ -17,6 +17,7 @@ class StudyParameters:
         self.categories = categories
         self.title = title
         self.source_url = source_url
+        self.upload_date = upload_date
 
     def add_source_url(self, url:str) -> None:
         if url:
@@ -45,6 +46,10 @@ class StudyParameters:
     def add_category(self, category: str) -> None:
         if category and category not in self.categories:
             self.categories.append(category)
+
+    def add_upload_date(self, upload_date: str) -> None:
+        if upload_date:
+            self.upload_date = upload_date
 
     def __str__(self):
         return str(self.__dict__)

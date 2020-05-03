@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import os
 import re
 import traceback
 import time
 import pandas as pd
+import threading
 
 import requests
 from bs4 import BeautifulSoup
@@ -25,7 +27,7 @@ PARSED_STUDY_PARAMS = []
 #these limits are added just to test functionality, they will be removed
 PRIMARY_EXEC_LIMIT = 5
 
-SECONDARY_LINK_LIMIT = 2
+SECONDARY_LINK_LIMIT =  30
 
 def run(url: str) -> dict:
     messages = []
@@ -41,7 +43,7 @@ def run(url: str) -> dict:
         append_selenium_parsing(messages, url, args)
     if args.parse_secondary:
         parse_secondary_links(messages, args)
-    output_pandas_csv(args)
+    output_pandas_csv(messages, args)
     return {"messages": messages}
 
 
@@ -153,8 +155,11 @@ def update_figshare_links(links_found):
 def parse_secondary_links(messages: list, args: argparse.Namespace) -> None:
     try:
         links = FIGSHARE_SELENIUM_LINKS
+        thread_list = []
         for link in links[:SECONDARY_LINK_LIMIT]:
-            parse_secondary_figshare_url(link, args, 0)
+            t = threading.Thread(target=parse_secondary_figshare_url, args=(link, args, 0))
+            thread_list.append(t)
+
         study_params = [str(x) for x in PARSED_STUDY_PARAMS]
         print(study_params)
         messages.append({"secondary": "parsed",
@@ -163,7 +168,6 @@ def parse_secondary_links(messages: list, args: argparse.Namespace) -> None:
     except Exception as e:
         secondary = {"status": "failed to parse"}
         messages.append({"secondary": secondary, "exception": traceback.format_exc()})
-
 
 def parse_secondary_figshare_url(link, args, attempts):
     browser = build_webdriver(args)
@@ -227,13 +231,13 @@ def build_webdriver(args: argparse.Namespace):
     return driver
 
 
-def output_pandas_csv(args) -> None:
-    if 'output_location' in args:
+def output_pandas_csv(messages, args) -> None:
+    if 'output_location' in args and args.output_location == 'console':
         data = build_panda_data_dict()
         for study in PARSED_STUDY_PARAMS:
             update_data_with_study(study, data)
         dataframe = pd.DataFrame(data)
-        dataframe.to_csv(args.output_location)
+        messages.append({"pandas_csv": str(dataframe.to_csv())})
 
 
 def build_panda_data_dict() -> dict:
@@ -243,16 +247,19 @@ def build_panda_data_dict() -> dict:
     data['Categories'] = []
     data['Keywords'] = []
     data['Description'] = []
+    data['Source_Url'] = []
+    data['Upload_Date'] =[]
     return data
 
 
 def update_data_with_study(study: StudyParameters, data: dict):
     data['Title'].append(study.title)
-    if study.author_list:
-        data['Author'].append(study.author_list[0])
+    data['Authors'].append(study.author_list)
     data['Categories'].append(study.categories)
     data['Keywords'].append(study.keywords)
     data['Description'].append(study.description)
+    data['Source_Url'].append(study.source_url)
+    data['Upload_Date'].append(study.upload_date)
     return data
 
 
@@ -268,11 +275,12 @@ def main(args: argparse.Namespace) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="command line tool to parse web links for bioinfo links")
 
-    parser.add_argument('--url', type=str, required=True)
-    parser.add_argument('--webdriver', type=str, choices=["chrome", "firefox"], required=True)
-    parser.add_argument('--webdriver_location', type=str, required=False)
-    parser.add_argument('--output_location', type=str, required=False)
+    parser.add_argument('--url', type=str, default=os.environ.get('URL'))
+    parser.add_argument('--webdriver', type=str, choices=["chrome", "firefox"], default=os.environ.get('WEBDRIVER'))
+    parser.add_argument('--webdriver_location', type=str, default=os.environ.get('WD_LOCATION'))
+    parser.add_argument('--output_location', type=str, default="console")
     parser.add_argument('--use_selenium', action="store_true", default=False)
     parser.add_argument('--parse_secondary', action="store_true", default=False)
     args = parser.parse_args()
+    print("python args:{}".format(args))
     main(args)
