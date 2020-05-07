@@ -53,3 +53,8 @@ class StudyParameters:
 
     def __str__(self):
         return str(self.__dict__)
+
+class WebCrawl:
+    def __init__(self, query_uri=None, study_list=[]):
+        self.query_uri = query_uri
+        self.study_list = study_list
