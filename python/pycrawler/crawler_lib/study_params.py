@@ -1,4 +1,4 @@
-class Protien:
+class Protein:
     def __init__(self, file_list=[]):
         self.file_list = file_list
 
@@ -31,7 +31,7 @@ class StudyParameters:
         if description:
             self.description = description
 
-    def add_protien(self, protien: Protien) -> None:
+    def add_protien(self, protien: Protein) -> None:
         if protien and protien not in self.protein_list:
             self.protein_list.append(protien)
 
