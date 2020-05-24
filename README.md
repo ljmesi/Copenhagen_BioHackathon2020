@@ -3,8 +3,32 @@
 
 This is the home repository of team BioCrawCraw's contributions in Copenhagen BioHackathon 2020.
 
-To run the crawler(s):
-1) Choose the language, choices are js or python
-2) The language directories may have multiple crawlers, choose the one that suits you
-3) Follow the README.md file in the application directory for instructions on how to run that application
+##Web Scraper initial design:
 
+___
+
+![](initial_design.png)
+
+___
+
+The Components listed above are:
+
+###__Queue Producers:__
+
+  These should be maintained under the `crawler_templates` directory. They supply, or produce study data that is parsed
+  or crawled from external sites
+   
+###__Queue:__
+ 
+   We currently use aws SQS for storing messages in a cost effective way
+   
+###__Queue Consumer:__
+ 
+   This component is scheduled to be built with the intent to consume messages that are delivered
+   to the queue. This component will process the messages and store them in the database. Will will use
+   a cost effective database initlally for storing messages.
+   
+###__REST API:__
+
+  This component is scheduled to be built where by studies stored in the database can be queried
+  based on study attribute (i.e. author, publish date, keyword)
