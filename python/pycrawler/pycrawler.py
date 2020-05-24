@@ -10,7 +10,7 @@ import threading
 
 import requests
 from bs4 import BeautifulSoup
-from crawler_lib.study_params import Protien, StudyParameters
+from crawler_lib.study_params import Protein, StudyParameters
 
 FIGSHARE_COOKIE_XPATH = "//a[@class = 'simple-pink-button acceptCookies']"
 
@@ -225,7 +225,8 @@ def build_webdriver(args: argparse.Namespace):
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
-        driver = webdriver.Chrome(args.webdriver_location, chrome_options=chrome_options)
+        #driver = webdriver.Chrome()
+        driver = webdriver.Chrome(chrome_options=chrome_options)
     if driver is None:
         print("could not build webdriver on localhost")
     return driver
