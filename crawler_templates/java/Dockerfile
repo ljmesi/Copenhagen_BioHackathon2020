@@ -2,17 +2,13 @@ FROM browserless/base:latest
 
 WORKDIR /usr/src/app
 
-COPY requirements.py ./
+COPY . .
 
 RUN apt-get update -y
 
-RUN apt-get install -y python3 python3-pip
-
-RUN pip3 install -r requirements.py
+RUN apt-get install -y maven openjdk-11-jre openjdk-11-jdk
 
 COPY ./start.sh /
-
-COPY . .
 
 RUN chmod 755 /start.sh
 
