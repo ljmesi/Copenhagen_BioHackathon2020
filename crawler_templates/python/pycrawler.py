@@ -4,9 +4,7 @@ import os
 import traceback
 import argparse
 
-import requests
 from bs4 import BeautifulSoup
-from numpy.core.tests.test_scalarinherit import D
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
