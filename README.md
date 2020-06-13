@@ -1,5 +1,4 @@
 # Copenhagen BioHackathon2020 - Team BioCrawCraw
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ljmesi/Copenhagen_BioHackathon2020/master?filepath=Select_Covid-19_data.ipynb)
 
 This is the home repository of team BioCrawCraw's contributions in Copenhagen BioHackathon 2020.
 
