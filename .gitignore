@@ -5,6 +5,7 @@ __pycache__/
 *.idea*
 *secrets.yaml*
 *.swp*
+*.DS*
 
 # C extensions
 *.so

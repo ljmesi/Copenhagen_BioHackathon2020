@@ -6,7 +6,8 @@ from flask_migrate import Migrate
 import datetime
 
 DB_CONNECTION = 'mysql+mysqlconnector://{user}:{password}@{server}/{database}'.format(
-user=<USERNAME>, password=<PASSWORD>, server=<SERVER>, database=<DATABASE>
+#user=<USERNAME>, password=<PASSWORD>, server=<SERVER>, database='mdcrawler_consumer'
+user='sgarcia', password='Astros123', server='localhost', database='mdcrawler_consumer'
 )
 
 app = Flask(__name__)
@@ -26,17 +27,36 @@ keywords = db.Table('keywords',
 
 class Article(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    source_url = db.Column(db.String(128))
+    title = db.Column(db.String(128))
+    source_url = db.Column(db.String(255))
     keywords = db.relationship('Keyword', secondary=keywords, lazy='subquery',
-    backref=db.backref('articles', lazy=True))
+        backref=db.backref('articles', lazy=True))
+    files = db.relationship('File', backref='article', lazy=True)
+    digital_object_id = db.Column(db.String(128))
+    parent_request_url = db.Column(db.String(255))
+    description = db.Column(db.Text)
+    parse_date = db.Column(db.TIMESTAMP(timezone=True))
     created_date = db.Column(db.TIMESTAMP(timezone=True), default=datetime.datetime.utcnow)
     modified_date = db.Column(db.TIMESTAMP(timezone=True), default=datetime.datetime.utcnow)
 
     def __repr__(self):
-        return '<Article %r>' % self.id
+        return '<Article %r %s>' % self.id, self.title
 
 class Keyword(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     word = db.Column(db.String(128))
     created_date = db.Column(db.TIMESTAMP(timezone=True), default=datetime.datetime.utcnow)
     modified_date = db.Column(db.TIMESTAMP(timezone=True), default=datetime.datetime.utcnow)
+
+    def __repr__(self):
+        return '<Article %r %s>' % self.id, self.word
+
+class File(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    article_id = db.Column(db.Integer, db.ForeignKey('article.id'), nullable=False)
+    file_name = db.Column(db.String(255))
+    url = db.Column(db.String(255))
+    size = db.Column(db.Integer)
+
+    def __repr__(self):
+        return '<Article %r %s>' % self.id, self.url
