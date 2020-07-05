@@ -91,7 +91,3 @@ class File(db.Model):
 
     def __repr__(self):
         return "<Article %r %s>" % self.id
-
-
-if __name__ == "__main__":
-    app.run()
