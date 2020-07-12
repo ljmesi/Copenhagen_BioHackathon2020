@@ -1,0 +1,29 @@
+ORF	Gene	Gene2	Full_Name	Disease_Names	Search_Terms
+ORF1AB	nsp1		Host translation inhibitor nsp1	sars-cov-2	molecular dynamics
+ORF1AB	nsp2		Non-structural protein 2	sars-cov2	trajectories
+ORF1AB	nps3		Papain-like proteinase	covid19	dynamics simulation
+ORF1AB	nps4		Non-structural protein 4	covid-19	trajectory
+ORF1AB	nsp5	3CL-PRO	3C-like proteinase	sars	molecular docking
+ORF1AB	nsp6		Non-structural protein 6	coronavirus	
+ORF1AB	nsp7		Non-structural protein 7	ncov2019	
+ORF1AB	nsp8		Non-structural protein 8	ncov-2019	
+ORF1AB	nsp9		Non-structural protein 9	nCov2019	
+ORF1AB	nsp10		Non-structural protein 10	nCov-2019	
+ORF1AB	RDRP		RNA-Directed RNA Polymerase	COVID2019	
+ORF1AB	Hel		Helicase	nCoV	
+ORF1AB	Exon		Proofreading exoribonuclease (Guanine-N7 methyltransferase)		
+ORF1AB	NendoU		Uridylate-specific endoribonuclease		
+ORF1AB	2'-O-MT		2'-O-methyltransferase		
+S	Spike	Spike trimeric complex (S1, S2, S`)	Spike surface glycoprotein (monomer)		
+ORF3A			Protein 3a		
+E			Envelope small membrane proteins		
+M			Membrane protein		
+ORF6			Protein 6		
+ORF7A			Protein 7a		
+ORF8			Protein 8		
+N			Nucleoprotein		
+ORF10			3` UTR		
+			S-protein		
+			Spike protein		
+			Spike trimeric complex (S1S2S`)		
+			Spike surface glycoprotein (monomer)		

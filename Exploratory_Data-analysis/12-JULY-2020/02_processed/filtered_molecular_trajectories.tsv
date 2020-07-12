@@ -1,0 +1,238 @@
+	accessRights	authors	containerURI	dataTypes	dateAvailable	description	doi	externalSubjectAreas	institutions	keywords	method	publicationDate	source	title	type_cont	version
+0	http://creativecommons.org/licenses/by/4.0	Teruhisa S. KOMATSU|Yohei Koyama|Noriaki OKIMOTO|Gentaro MORIMOTO|Yousuke Ohno|Makoto Taiji	https://data.mendeley.com/datasets/vpps4vhryg	OTHER|IMAGE|TABULAR_DATA|DATASET|TEXT	2020-04-27	"Raw trajectory data (GROMACS format) of 10 microseconds all atom molecular dynamics simulation of COVID-19 related SARS-CoV-2 dimeric main protease without ligand based on PDB 6LU7, were caclulated on a special purpose computer, MDGRAPE-4A, at RIKEN BDR, JAPAN. We can observe relaxation dynamics and fluctuations of the dimeric protease over the microseconds timescale. We hope that this raw data can help drug development efforts targeting the SARS-CoV-2 main protease. Preparation details and summaries will be submitted to ""Data in Brief"". More data might be added as new version or another dataset."	10.17632/vpps4vhryg.2	Virus|Drug|Molecular Dynamics		Virus|Drug|Molecular Dynamics		2020-04-27	MENDELEY_DATA	COVID-19 related trajectory data of 10 microseconds all atom molecular dynamics simulation of SARS-CoV-2 dimeric main protease	article	2.0
+1	http://creativecommons.org/licenses/by/4.0	Ryunosuke Yoshino|Nobuaki Yasuo|Masakazu Sekijima	https://data.mendeley.com/datasets/5jfsx6j75g	DATASET|FILE_SET	2020-04-21	MD simulations were performed using Desmond on supercomputer TSUBAME 3.0. The inhibitor-SARS-CoV-2 Mpro complex models were placed in the orthorhombic box with a buffer distance of 10 Å in order to create a hydration model. TIP3P water model was used for creation of the hydration model. We performed MD simulations under the NPT ensemble for 1 μs on three complex structures using OPLS3e force field. 	10.17632/5jfsx6j75g.2	Drug|Coronavirus Disease 2019|Molecular Dynamics|Molecular Docking|Severe Acute Respiratory Syndrome Coronavirus 2		Drug|Coronavirus Disease 2019|Molecular Dynamics|Molecular Docking|Severe Acute Respiratory Syndrome Coronavirus 2		2020-04-21	MENDELEY_DATA	Trajectory data of molecular dynamics simulation of SARS-CoV-2 Main Protease and inhibitor drug candidates	article	2.0
+2	info:eu-repo/semantics/openAccess	Durdagi, Serdar|Aksoydan, Busecan|Dogan, Berna|Sahin, Kader|Shahraki, Aida	https://zenodo.org/record/3756976	DATASET	2020-04-19	"Data includes all of the trajectories (1000) of classical all-atom molecular dynamics (MD) simulations of inhibitor N3 at the binding pocket of SARS-CoV2 main protease target (PDB ID: 6LU7). In order to decrease the size of the file only protein and ligand trajectories were provided.  Simulation has been performed with Desmond. Protein–ligand complexes were obtained from RCSB PDB (PDB ID: 6LU7). Complex was placed in the cubic boxes with explicit TIP3P water models that have 10.0 Å thickness from surfaces of protein. The system is neutralized by adding counter ions, and salt solution of 0.15M NaCl was also used to adjust the concentration of the systems. The long-range electrostatic interactions were calculated by the particle mesh Ewald method. A cutoff
+radius of 9.0 Å was used for both van der Waals and Coulombic interactions. The temperature was set as 310K initially, and Nose–Hoover thermostat was used for adjustment. Martyna–Tobias–Klein protocol was employed to control the pressure, which was set at 1.01325 bar. The time-step was assigned as 2.0 fs. The default values were used for minimization and equilibration steps, and finally 100 ns production run was performed for the simulations."	10.5281/zenodo.3756976	SARS-CoV2 Main Protease, holo form, PDB 6LU7, molecular dynamics (MD) simulations, Desmond		SARS-CoV2 Main Protease, holo form, PDB 6LU7, molecular dynamics (MD) simulations, Desmond		2020-04-18	ZENODO	All Atom Molecular Dynamics Simulations of inhibitor N3 at the binding pocket of SARS-CoV2 Main Protease (PDB ID: 6LU7)	article	
+3	info:eu-repo/semantics/openAccess	Durdagi, Serdar|Aksoydan, Busecan|Dogan, Berna|Sahin, Kader|Shahraki, Aida	https://zenodo.org/record/3746892	DATASET	2020-04-09	"Data includes all of the trajectories (2000) of classical all-atom molecular dynamics (MD) simulations of ritonavir at the binding pocket of SARS-CoV2 main protease target. In order to decrease the size of the file only protein and ligand trajectories were provided.  Simulation has been performed with Desmond. Protein–ligand complexes were obtained by Glide/SP docking program. Complex was placed in the cubic boxes with explicit TIP3P water models that have 10.0 Å thickness from surfaces of protein. The system is neutralized by adding counter ions, and salt solution of 0.15M NaCl was also used to adjust the concentration of the systems. The long-range electrostatic interactions were calculated by the particle mesh Ewald method. A cutoff
+radius of 9.0 Å was used for both van der Waals and Coulombic interactions. The temperature was set as 310K initially, and Nose–Hoover thermostat was used for adjustment. Martyna–Tobias–Klein protocol was employed to control the pressure, which was set at 1.01325 bar. The time-step was assigned as 2.0 fs. The default values were used for minimization and equilibration steps, and finally 500 ns production run was performed for the simulation.
+
+ "	10.5281/zenodo.3746892	SARS-CoV2 Main Protease, ritonavir, molecular dynamics (MD) simulations, Desmond, Glide		SARS-CoV2 Main Protease, ritonavir, molecular dynamics (MD) simulations, Desmond, Glide		2020-04-09	ZENODO	All Atom Molecular Dynamics Simulations of Ritonavir at the Binding Pocket of SARS-CoV2 Main Protease	article	
+4	info:eu-repo/semantics/openAccess	Průša Jiří|Cifra Michal	https://zenodo.org/record/3352030	DATASET|FILE_SET	2019-08-06	We present molecular dynamics (MD) trajectories of water solutions of eighth zwitterionic amino-acids (L- form) glycine (GLY), alanine (ALA), proline (PRO), threonine (THR), leucine (LEU), glutamine (GLN), histidine (HIS) and tyrosine (TYR) using various force field (OPLS-AA, Amber99ff-SB, GROMOS96 54a7, CHARMM19) and water model (SPC/E, TIP3P) combinations. Additionally, we present OPLS-AA molecular dynamics (MD) trajectories for alanine (ALA), leucine (LEU), glutamine (GLN), and tyrosine (TYR) varying the values of major force field parameters: charge on all amino acid atoms, bond length (all amino acid bonds), Lennard-Jones epsilon parameter and stiffness of bond angles. Our data enable to uncover sensitivity of molecular dynamics derived analysis to variation of force field and water models and force field parameters. This data set was used to understand the effect of molecular dynamics parameters on dielectric properties of amino acid solutions.	10.5281/zenodo.3352030	Dielectric spectroscopy|Amino acid|Molecular dynamics|Force field|Biomolecules		Dielectric spectroscopy|Amino acid|Molecular dynamics|Force field|Biomolecules		2019-07-31	ZENODO	Dataset A1606 and A1905	article	
+5	info:eu-repo/semantics/openAccess	Florencia Klein|Exequiel Barrera|Pablo Garay|Matías Machado|Martín Soñora|Sergio Pantano	https://zenodo.org/record/3766270	DATASET	2020-04-27	"This dataset contains the trajectory of a 10 microseconds-long coarse-grained molecular dynamics simulation of SARS-CoV2 Papain-like protease in its APO form with Zn ions bound (PDB id: 6W9C). Simulations have been performed using the SIRAH force field running with the Amber18 package at the Uruguayan National Center for Supercomputing (ClusterUY) under the conditions reported in Machado et al. JCTC 2019, adding 150 mM NaCl according to Machado & Pantano JCTC 2020. Zinc ions were parameterized as reported in Klein et al. 2020.
+
+The files 6W9C_SIRAHcg_rawdata_0-5us.tar,  6W9C_SIRAHcg_rawdata_5-10us.tar, contain all the raw information required to visualize (on VMD), analyze, backmap, and eventually continue the simulations using Amber18 or higher. Step-By-Step tutorials for running, visualizing, and analyzing CG trajectories using SirahTools can be found at www.sirahff.com.
+
+Additionally, the file 6W9C_SIRAHcg_10us_prot.tar contains only the protein coordinates, while 6W9C_SIRAHcg_10us_prot_skip10ns.tar contains one frame every 10ns.
+
+To take a quick look at the trajectory:
+
+1- Untar the file 6W9C_SIRAHcg_10us_prot_skip10ns.tar
+
+2- Open the trajectory on VMD using the command line:
+
+vmd 6W9C_SIRAHcg_prot.prmtop 6W9C_SIRAHcg_prot_10us_skip10ns.ncrst 6W9C_SIRAHcg_prot_10us_skip10ns.nc -e sirah_vmdtk.tcl
+
+Note that you can use normal VMD drawing methods as vdw, licorice, etc., and coloring by restype, element, name, etc. 
+
+This dataset is part of the SIRAH-CoV2 initiative.
+
+For further details, please contact Florencia Klein (fklein@pasteur.edu.uy) or Sergio Pantano (spantano@pasteur.edu.uy)."	10.5281/zenodo.3766270	COVID-19|Molecular Dynamics|Coronavirus|CoV2 Papain-like Protease|drug design|simulation|SIRAH|SARS|coarse-grain		COVID-19|Molecular Dynamics|Coronavirus|CoV2 Papain-like Protease|drug design|simulation|SIRAH|SARS|coarse-grain		2020-04-25	ZENODO	SIRAH-CoV2  initiative:  Papain-like Protease   (PDB id:6W9C)	article	
+6	info:eu-repo/semantics/openAccess	Martín Soñora|Exequiel Barrera|Pablo Garay|Florencia Klein|Matías Machado|Sergio Pantano	https://zenodo.org/record/3779057	DATASET	2020-05-01	"This dataset contains the trajectory of a 10 microseconds-long coarse-grained molecular dynamics simulation of SARS-CoV2 NSP16 - NSP10 Complex with Zn ions bound (PDB id: 6W4H). Simulations have been performed using the SIRAH force field running with the Amber18 package at the Uruguayan National Center for Supercomputing (ClusterUY) under the conditions reported in Machado et al. JCTC 2019, adding 150 mM NaCl according to Machado & Pantano JCTC 2020. Zinc ions were parameterized as reported in Klein et al. 2020.
+
+The file 6W4H_SIRAHcg_rawdata.tar contains all the raw information required to visualize (on VMD), analyze, backmap, and eventually continue the simulations using Amber18 or higher. Step-By-Step tutorials for running, visualizing, and analyzing CG trajectories using SirahTools can be found at www.sirahff.com.
+
+Additionally, the file 6W4H_SIRAHcg_10us_prot.tar contains only the protein coordinates, while 6W4H_SIRAHcg_10us_prot_skip10ns.tar contains one frame every 10ns.
+
+To take a quick look at the trajectory:
+
+1- Untar the file 6W4H_SIRAHcg_10us_prot_skip10ns.tar
+
+2- Open the trajectory on VMD using the command line:
+
+vmd 6W4H_SIRAHcg_prot.prmtop 6W4H_SIRAHcg_prot_10us_skip10ns.ncrst 6W4H_SIRAHcg_prot_10us_skip10ns.nc -e sirah_vmdtk.tcl
+
+Note that you can use normal VMD drawing methods as vdw, licorice, etc., and coloring by restype, element, name, etc. 
+
+This dataset is part of the SIRAH-CoV2 initiative.
+
+For further details, please contact Martín Soñora (msonora@pasteur.edu.uy) or Sergio Pantano (spantano@pasteur.edu.uy).
+
+ "	10.5281/zenodo.3779057	CoV2 NSP16 - NSP10|COVID-19|Coronavirus|drug design|simulation|SIRAH|SARS|coarse-grain		CoV2 NSP16 - NSP10|COVID-19|Coronavirus|drug design|simulation|SIRAH|SARS|coarse-grain		2020-04-30	ZENODO	SIRAH-CoV2  initiative: NSP16 - NSP10 Complex (PDB id:6W4H)	article	
+7	info:eu-repo/semantics/openAccess	Martín Soñora|Exequiel Barrera|Pablo Garay|Florencia Klein|Matías Machado|Sergio Pantano	https://zenodo.org/record/3779002	DATASET	2020-05-01	"This dataset contains the trajectory of a 12 microseconds-long coarse-grained molecular dynamics simulation of SARS-CoV-2 receptor binding domain in complex with a human antibody CR3022 (PDB id: 6W41). Simulations have been performed using the SIRAH force field running with the Amber18 package at the Uruguayan National Center for Supercomputing (ClusterUY) under the conditions reported in Machado et al. JCTC 2019, adding 150 mM NaCl according to Machado & Pantano JCTC 2020. Glycans have been removed from the structures.
+
+The file 6W41_SIRAHcg_rawdata.tar contains all the raw information required to visualize (on VMD), analyze, backmap, and eventually continue the simulations using Amber18 or higher. Step-By-Step tutorials for running, visualizing, and analyzing CG trajectories using SirahTools can be found at www.sirahff.com.
+
+Additionally, the file 6W41_SIRAHcg_12us_prot.tar contains only the protein coordinates, while 6W41_SIRAHcg_12us_prot_skip10ns.tar contains one frame every 10ns.
+
+To take a quick look at the trajectory:
+
+1- Untar the file 6W41_SIRAHcg_12us_prot_skip10ns.tar
+
+2- Open the trajectory on VMD using the command line:
+
+vmd 6W41_SIRAHcg_prot.prmtop 6W41_SIRAHcg_prot_12us_skip10ns.ncrst 6W41_SIRAHcg_prot_12us_skip10ns.nc -e sirah_vmdtk.tcl
+
+Note that you can use normal VMD drawing methods as vdw, licorice, etc., and coloring by restype, element, name, etc. 
+
+This dataset is part of the SIRAH-CoV2 initiative.
+
+For further details, please contact Martín Soñora (msonora@pasteur.edu.uy) or Sergio Pantano (spantano@pasteur.edu.uy)."	10.5281/zenodo.3779002	Coronavirus|antibody|drug design|simulation|SIRAH|SARS|coarse-grain|CoV2 RBD		Coronavirus|antibody|drug design|simulation|SIRAH|SARS|coarse-grain|CoV2 RBD		2020-04-30	ZENODO	SIRAH-CoV2  initiative: S1 Receptor Binding Domain in complex with human antibody CR3022 (PDBid: 6W41)	article	
+8	info:eu-repo/semantics/openAccess	Martín Soñora|Exequiel Barrera|Pablo Garay|Florencia Klein|Matías Machado|Sergio Pantano	https://zenodo.org/record/3754643	DATASET	2020-04-17	"This dataset contains the trajectory of a 10 microseconds-long coarse-grained molecular dynamics simulation of SARS-CoV2 NSP9 RNA binding protein (PDB id: 6W4B, Bioassembly 1). Simulations have been performed using the SIRAH force field running with the Amber18 package at the Uruguayan National Center for Supercomputing (ClusterUY) under the conditions reported in Machado et al. JCTC 2019, adding 150 mM NaCl according to Machado & Pantano JCTC 2020. 
+
+The file 6W4B_SIRAHcg_rawdata1.tar contains all the raw information required to visualize (on VMD), analyze, backmap, and eventually continue the simulations using Amber18 or higher. Step-By-Step tutorials for running, visualizing, and analyzing CG trajectories using SirahTools can be found at www.sirahff.com.
+
+Additionally, the file 6W4B_SIRAHcg_10us_prot.tar contains only the protein coordinates, while 6W4B_SIRAHcg_10us_prot_skip10ns.tar contains one frame every 10ns.
+
+To take a quick look at the trajectory:
+
+1- Untar the file 6W4B_SIRAHcg_10us_prot_skip10ns.tar
+
+2- Open the trajectory on VMD using the command line:
+
+vmd 6W4B_SIRAHcg_prot.prmtop 6W4B_SIRAHcg_prot_10us_skip10ns.ncrst 6W4B_SIRAHcg_prot_10us_skip10ns.nc -e sirah_vmdtk.tcl
+
+Note that you can use normal VMD drawing methods as vdw, licorice, etc., and coloring by restype, element, name, etc. 
+
+This dataset is part of the SIRAH-CoV2 initiative.
+
+For further details, please contact Sergio Pantano (spantano@pasteur.edu.uy)."	10.5281/zenodo.3754643	COVID-19|Coronavirus|drug design|simulation|SIRAH|SARS|CoV2 NSP9|coarse-grain		COVID-19|Coronavirus|drug design|simulation|SIRAH|SARS|CoV2 NSP9|coarse-grain		2020-04-16	ZENODO	SIRAH-CoV2  initiative: NSP9 RNA binding protein (PDBid:6W4B)	article	
+9	info:eu-repo/semantics/openAccess	Exequiel Barrera|Pablo Garay|Florencia Klein|Matías Machado|Martín Soñora|Sergio Pantano	https://zenodo.org/record/3751583	DATASET	2020-04-16	"This dataset contains the trajectory of a 10 microseconds-long coarse-grained molecular dynamics simulation of SARS-CoV2 ADP ribose phosphatase of NSP3 from SARS CoV-2 in its APO form (PDB id: 6W02, Bioassembly 1). Simulations have been performed using the SIRAH force field running with the Amber18 package at the Uruguayan National Center for Supercomputing (ClusterUY) under the conditions reported in Machado et al. JCTC 2019, adding 150 mM NaCl according to Machado & Pantano JCTC 2020. 
+
+The files 6W02_SIRAHcg_rawdata.tar contains all the raw information required to visualize (on VMD), analyze, backmap, and eventually continue the simulations using Amber18 or higher. Step-By-Step tutorials for running, visualizing, and analyzing CG trajectories using SirahTools can be found at www.sirahff.com.
+
+Additionally, the file 6W02_SIRAHcg_10us_prot.tar contains only the protein coordinates, while 6W02_SIRAHcg_10us_prot_skip10ns.tar contains one frame every 10ns.
+
+To take a quick look at the trajectory:
+
+1- Untar the file 6W02_SIRAHcg_10us_prot_skip10ns.tar
+
+2- Open the trajectory on VMD using the command line:
+
+vmd6W02_SIRAHcg_prot.prmtop 6W02_SIRAHcg_prot_10us_skip10ns.ncrst 6W02_SIRAHcg_prot_10us_skip10ns.nc -e sirah_vmdtk.tcl
+
+Note that you can use normal VMD drawing methods as vdw, licorice, etc., and coloring by restype, element, name, etc. 
+
+This dataset is part of the SIRAH-CoV2 initiative.
+
+For further details, please contact Exequiel Barrera (ebarrera@pasteur.edu.uy) or Sergio Pantano (spantano@pasteur.edu.uy)."	10.5281/zenodo.3751583	COVID-19|Coronavirus|drug design|simulation|CoV2 Protease|SIRAH|SARS|coarse-grain		COVID-19|Coronavirus|drug design|simulation|CoV2 Protease|SIRAH|SARS|coarse-grain		2020-04-14	ZENODO	SIRAH-CoV2  initiative: Apo ADP ribose phosphatase of NSP3 from SARS CoV-2 (PDB id: 6W02)	article	
+10	info:eu-repo/semantics/openAccess	Exequiel Barrera|Pablo Garay|Florencia Klein|Matías Machado|Martín Soñora|Sergio Pantano	https://zenodo.org/record/3748659	DATASET|FILE_SET	2020-04-14	"This dataset contains the trajectory of a 10 microseconds-long coarse-grained molecular dynamics simulation of SARS-CoV2 Endoribonuclease NSP15 in its APO form (PDB id: 6W01, Bioassembly 1). Simulations were performed using the SIRAH force field running with the Amber18 package at the Uruguayan National Center for Supercomputing (ClusterUY) under the conditions reported in Machado et al. JCTC 2019, adding 150 mM NaCl according to Machado & Pantano JCTC 2020. 
+
+The file 6W01_SIRAHcg_rawdata.tar contains all the raw information required to visualize (on VMD), analyze, backmap, and eventually continue the simulations using Amber18 or higher. Step-By-Step tutorials for running, visualizing, and analyzing CG trajectories using SirahTools can be found at www.sirahff.com.
+
+Additionally, the file 6W01_SIRAHcg_10us_prot.tar contains only the protein coordinates, while 6W01_SIRAHcg_10us_prot_skip10ns.tar contains one frame every 10ns.
+
+To take a quick look at the trajectory:
+
+1- Untar the file 6W01_SIRAHcg_10us_prot_skip10ns.tar
+
+2- Open the trajectory on VMD using the command line:
+
+vmd 6W01_SIRAHcg_prot.prmtop 6W01_SIRAHcg_prot_10us_skip10ns.ncrst 6W01_SIRAHcg_prot_10us_skip10ns.nc -e sirah_vmdtk.tcl
+
+Note that you can use normal VMD drawing methods as vdw, licorice, etc., and coloring by restype, element, name, etc. 
+
+This dataset is part of the SIRAH-CoV2 initiative.
+
+For further details, please contact Exequiel Barrera (ebarrera@pasteur.edu.uy) or Sergio Pantano (spantano@pasteur.edu.uy)."	10.5281/zenodo.3748659	CoV2 Endonuclease|COVID-19|Coronavirus|drug design|simulation|SIRAH|SARS|coarse-grain		CoV2 Endonuclease|COVID-19|Coronavirus|drug design|simulation|SIRAH|SARS|coarse-grain		2020-04-10	ZENODO	SIRAH-CoV2  initiative: NSP15 Endonuclease  (PDB id:6W01)	article	
+11	info:eu-repo/semantics/openAccess	Florencia Klein|Exequiel Barrera|Pablo Garay|Matías Machado|Martín Soñora|Sergio Pantano	https://zenodo.org/record/3755835	DATASET	2020-04-20	"This dataset contains the trajectory of a 10 microseconds-long coarse-grained molecular dynamics simulation of SARS-CoV2 Nucleocapsid protein N-terminal RNA binding domain (PDB id:6M3M). Simulations have been performed using the SIRAH force field running with the Amber18 package at the Uruguayan National Center for Supercomputing (ClusterUY) under the conditions reported in Machado et al. JCTC 2019, adding 150 mM NaCl according to Machado & Pantano JCTC 2020. 
+
+The files 6M3M_SIRAHcg_rawdata1.tar contains all the raw information required to visualize (on VMD), analyze, backmap, and eventually continue the simulations using Amber18 or higher. Step-By-Step tutorials for running, visualizing, and analyzing CG trajectories using SirahTools can be found at www.sirahff.com.
+
+Additionally, the file 6M3M_SIRAHcg_10us_prot.tar contains only the protein coordinates, while 6M3M_SIRAHcg_10us_prot_skip10ns.tar contains one frame every 10ns.
+
+To take a quick look at the trajectory:
+
+1- Untar the file 6M3M_SIRAHcg_10us_prot_skip10ns.tar
+
+2- Open the trajectory on VMD using the command line:
+
+vmd 6M3M_SIRAHcg_prot.prmtop 6M3M_SIRAHcg_prot_10us_skip10ns.ncrst 6M3M_SIRAHcg_prot_10us_skip10ns.nc -e sirah_vmdtk.tcl
+
+Note that you can use normal VMD drawing methods as vdw, licorice, etc., and coloring by restype, element, name, etc. 
+
+This dataset is part of the SIRAH-CoV2 initiative.
+
+For further details, please contact Florencia Klein (fklein@pasteur.edu.uy) or Sergio Pantano (spantano@pasteur.edu.uy)."	10.5281/zenodo.3755835	COVID-19|Coronavirus|drug design|simulation|SIRAH|SARS|coarse-grain|CoV2 nucleocapsid		COVID-19|Coronavirus|drug design|simulation|SIRAH|SARS|coarse-grain|CoV2 nucleocapsid		2020-04-17	ZENODO	SIRAH-CoV2  initiative: Nucleocapsid protein N-terminal RNA binding domain (PDB id:6M3M)	article	
+12	info:eu-repo/semantics/openAccess	Martín Soñora|Exequiel Barrera|Pablo Garay|Florencia Klein|Matías Machado|Sergio Pantano	https://zenodo.org/record/3748665	DATASET	2020-04-14	"This dataset contains the trajectory of a 15 microseconds-long coarse-grained molecular dynamics simulation of SARS-CoV2 Main protease in its APO form (PDB id: 6LU7, Bioassembly 1). Simulations have been performed using the SIRAH force field running with the Amber18 package at the Uruguayan National Center for Supercomputing (ClusterUY) under the conditions reported in Machado et al. JCTC 2019, adding 150 mM NaCl according to Machado & Pantano JCTC 2020. 
+
+The files 6LU7_SIRAHcg_rawdata1.tar,  6LU7_SIRAHcg_rawdata2.tar, and 6LU7_SIRAHcg_rawdata3.tar, contain all the raw information required to visualize (on VMD), analyze, backmap, and eventually continue the simulations using Amber18 or higher. Step-By-Step tutorials for running, visualizing, and analyzing CG trajectories using SirahTools can be found at www.sirahff.com.
+
+Additionally, the file 6LU7_SIRAHcg_10us_prot.tar contains only the protein coordinates, while 6LU7_SIRAHcg_10us_prot_skip10ns.tar contains one frame every 10ns.
+
+To take a quick look at the trajectory:
+
+1- Untar the file 6LU7_SIRAHcg_10us_prot_skip10ns.tar
+
+2- Open the trajectory on VMD using the command line:
+
+vmd6LU7_SIRAHcg_prot.prmtop 6LU7_SIRAHcg_prot_15us_skip10ns.ncrst 6LU7_SIRAHcg_prot_15us_skip10ns.nc -e sirah_vmdtk.tcl
+
+Note that you can use normal VMD drawing methods as vdw, licorice, etc., and coloring by restype, element, name, etc. 
+
+This dataset is part of the SIRAH-CoV2 initiative.
+
+For further details, please contact Sergio Pantano (spantano@pasteur.edu.uy)."	10.5281/zenodo.3748665	COVID-19|Coronavirus|drug design|simulation|CoV2 Protease|SIRAH|SARS|coarse-grain		COVID-19|Coronavirus|drug design|simulation|CoV2 Protease|SIRAH|SARS|coarse-grain		2020-04-11	ZENODO	SIRAH-CoV2  initiative:  Main Protease   (PDB id:6LU7)	article	
+13	info:eu-repo/semantics/openAccess	Florencia Klein|Exequiel Barrera|Pablo Garay|Matías Machado|Martín Soñora|Sergio Pantano	https://zenodo.org/record/3755835	DATASET	2020-04-20	"This dataset contains the trajectory of a 10 microseconds-long coarse-grained molecular dynamics simulation of SARS-CoV2 Nucleocapsid protein N-terminal RNA binding domain (PDB id:6M3M). Simulations have been performed using the SIRAH force field running with the Amber18 package at the Uruguayan National Center for Supercomputing (ClusterUY) under the conditions reported in Machado et al. JCTC 2019, adding 150 mM NaCl according to Machado & Pantano JCTC 2020. 
+
+The files 6M3M_SIRAHcg_rawdata1.tar contains all the raw information required to visualize (on VMD), analyze, backmap, and eventually continue the simulations using Amber18 or higher. Step-By-Step tutorials for running, visualizing, and analyzing CG trajectories using SirahTools can be found at www.sirahff.com.
+
+Additionally, the file 6M3M_SIRAHcg_10us_prot.tar contains only the protein coordinates, while 6M3M_SIRAHcg_10us_prot_skip10ns.tar contains one frame every 10ns.
+
+To take a quick look at the trajectory:
+
+1- Untar the file 6M3M_SIRAHcg_10us_prot_skip10ns.tar
+
+2- Open the trajectory on VMD using the command line:
+
+vmd 6M3M_SIRAHcg_prot.prmtop 6M3M_SIRAHcg_prot_10us_skip10ns.ncrst 6M3M_SIRAHcg_prot_10us_skip10ns.nc -e sirah_vmdtk.tcl
+
+Note that you can use normal VMD drawing methods as vdw, licorice, etc., and coloring by restype, element, name, etc. 
+
+This dataset is part of the SIRAH-CoV2 initiative.
+
+For further details, please contact Florencia Klein (fklein@pasteur.edu.uy) or Sergio Pantano (spantano@pasteur.edu.uy)."	10.5281/zenodo.3755835	COVID-19|Coronavirus|drug design|simulation|SIRAH|SARS|coarse-grain|CoV2 nucleocapsid		COVID-19|Coronavirus|drug design|simulation|SIRAH|SARS|coarse-grain|CoV2 nucleocapsid		2020-04-17	ZENODO	SIRAH-CoV2  initiative: Nucleocapsid protein N-terminal RNA binding domain (PDB id:6M3M)	article	
+14	info:eu-repo/semantics/openAccess	Martín Soñora|Exequiel Barrera|Pablo Garay|Florencia Klein|Matías Machado|Sergio Pantano	https://zenodo.org/record/3748665	DATASET	2020-04-14	"This dataset contains the trajectory of a 15 microseconds-long coarse-grained molecular dynamics simulation of SARS-CoV2 Main protease in its APO form (PDB id: 6LU7, Bioassembly 1). Simulations have been performed using the SIRAH force field running with the Amber18 package at the Uruguayan National Center for Supercomputing (ClusterUY) under the conditions reported in Machado et al. JCTC 2019, adding 150 mM NaCl according to Machado & Pantano JCTC 2020. 
+
+The files 6LU7_SIRAHcg_rawdata1.tar,  6LU7_SIRAHcg_rawdata2.tar, and 6LU7_SIRAHcg_rawdata3.tar, contain all the raw information required to visualize (on VMD), analyze, backmap, and eventually continue the simulations using Amber18 or higher. Step-By-Step tutorials for running, visualizing, and analyzing CG trajectories using SirahTools can be found at www.sirahff.com.
+
+Additionally, the file 6LU7_SIRAHcg_10us_prot.tar contains only the protein coordinates, while 6LU7_SIRAHcg_10us_prot_skip10ns.tar contains one frame every 10ns.
+
+To take a quick look at the trajectory:
+
+1- Untar the file 6LU7_SIRAHcg_10us_prot_skip10ns.tar
+
+2- Open the trajectory on VMD using the command line:
+
+vmd6LU7_SIRAHcg_prot.prmtop 6LU7_SIRAHcg_prot_15us_skip10ns.ncrst 6LU7_SIRAHcg_prot_15us_skip10ns.nc -e sirah_vmdtk.tcl
+
+Note that you can use normal VMD drawing methods as vdw, licorice, etc., and coloring by restype, element, name, etc. 
+
+This dataset is part of the SIRAH-CoV2 initiative.
+
+For further details, please contact Sergio Pantano (spantano@pasteur.edu.uy)."	10.5281/zenodo.3748665	COVID-19|Coronavirus|drug design|simulation|CoV2 Protease|SIRAH|SARS|coarse-grain		COVID-19|Coronavirus|drug design|simulation|CoV2 Protease|SIRAH|SARS|coarse-grain		2020-04-11	ZENODO	SIRAH-CoV2  initiative:  Main Protease   (PDB id:6LU7)	article	
+15	CC BY 4.0	Cespugli, Marco|Durmaz, Vedat|Steinkellner, Georg|Gruber, Christian C.	https://figshare.com/articles/6_molecular_dynamics_simulations_of_coronavirus_2019-nCoV_protease_model_in_complex_with_different_conformations_of_lopinavir_/11764158	DATASET		"Molecular dynamics simulations of comparative model of novel coronavirus 2019-nCoV protease Mpro in complex with 6 different conformations based on the Catalophore point-cloud alignment and (re)- docking of lopinavir into the 2019ncov virus protease model. The docking experiment produced 8 clusters of possible conformations, we chose 6 out of 8 conformers and ran an all-atom 300 ps MD at 310 K (=36.85°C).
+-The two images in the main folder refers to the docked structures before MD simulation.-The file all_centroids.pse contains the frames representing the centroid of the subsequent MD simulation for each docking cluster.-Each archive contains the centroid in PDB format, the starting frame of the simulation in GRO format and the compressed trajectory in XTC format. In the directory ""other_files"" there are other data generated during the simulation, i.e. heatmap representing the contact frequency between the ligand atoms and the ones belonging to the homology model."	10.6084/m9.figshare.11764158	60102 Bioinformatics|60506 Virology				2020-01-01	figshare.ars	6 molecular dynamics simulations of coronavirus 2019-nCoV protease model in complex with different conformations of lopinavir.		
+16	CC BY 4.0	Cespugli, Marco|Durmaz, Vedat|Steinkellner, Georg|Gruber, Christian C.	https://figshare.com/articles/6_molecular_dynamics_simulations_of_coronavirus_2019-nCoV_protease_model_in_complex_with_different_conformations_of_lopinavir_/11764158/2	DATASET		"Molecular dynamics simulations of comparative model of novel coronavirus 2019-nCoV protease Mpro in complex with 6 different conformations based on the Catalophore point-cloud alignment and (re)- docking of lopinavir into the 2019ncov virus protease model. The docking experiment produced 8 clusters of possible conformations, we chose 6 out of 8 conformers and ran an all-atom 300 ps MD at 310 K (=36.85°C).
+-The two images in the main folder refers to the docked structures before MD simulation.-The file all_centroids.pse contains the frames representing the centroid of the subsequent MD simulation for each docking cluster.-Each archive contains the centroid in PDB format, the starting frame of the simulation in GRO format and the compressed trajectory in XTC format. In the directory ""other_files"" there are other data generated during the simulation, i.e. heatmap representing the contact frequency between the ligand atoms and the ones belonging to the homology model."	10.6084/m9.figshare.11764158.v2	60102 Bioinformatics|60506 Virology				2020-01-01	figshare.ars	6 molecular dynamics simulations of coronavirus 2019-nCoV protease model in complex with different conformations of lopinavir.		
+17		Morris, Zachary S.|Vliet, Kent A.|Abzhanov, Arkhat|Pierce, Stephanie E.	https://doi.org/10.5061/dryad.6cv82g1	SOFTWARE_CODE|TABULAR_DATA|DATASET|DOCUMENT|FILE_SET	2019-01-29	The distinctive anatomy of the crocodylian skull is intimately linked with dietary ecology, resulting in repeated convergence on blunt- and slender-snouted ecomorphs. These evolutionary shifts depend upon modifications of the developmental processes which direct growth and morphogenesis. Here we examine the evolution of cranial ontogenetic trajectories to shed light on the mechanisms underlying convergent snout evolution. We use geometric morphometrics to quantify skeletogenesis in an evolutionary context and reconstruct ancestral patterns of ontogenetic allometry to understand the developmental drivers of craniofacial diversity within Crocodylia. Our analyses uncovered a conserved embryonic region of morphospace (CER) shared by all non-gavialid crocodylians regardless of their eventual adult ecomorph. This observation suggests the presence of conserved developmental processes during early development (before Ferguson stage 20) across most of Crocodylia. Ancestral state reconstruction of ontogenetic trajectories revealed heterochrony, developmental constraint, and developmental systems drift have all played essential roles in the evolution of ecomorphs. Based on these observations, we conclude that two separate, but interconnected, developmental programs controlling craniofacial morphogenesis and growth enabled the evolutionary plasticity of skull shape in crocodylians.	10.5061/dryad.6cv82g1	evolutionary developmental biology|skull|heterochrony|geometric morphometrics|embryonic ontogeny		Crocodylia		2019-01-29	DRYAD	Data from: Heterochronic shifts and conserved embryonic shape underlie crocodylian craniofacial disparity and convergence		
+18	info:eu-repo/semantics/openAccess	Florencia Klein|Exequiel Barrera|Pablo Garay|Matías Machado|Martín Soñora|Sergio Pantano	https://zenodo.org/record/3747621	DATASET	2020-04-14	"This dataset contains the trajectory of a 10 microseconds-long coarse-grained molecular dynamics simulation of SARS-CoV2 RNA binding domain of the nucleocapsid phosphoprotein in its APO form with Zn ions bound (PDB id:6VYO, Bioassembly 1). Simulations were performed using the SIRAH force field running with the Amber18 package at the Uruguayan National Center for Supercomputing (ClusterUY) under the conditions reported in Machado et al. JCTC 2019, adding 150 mM NaCl according to Machado & Pantano JCTC 2020. Zinc ions were parameterized as reported in Klein et al. 2020.
+
+The file 6VYO_SIRAHcg_rawdata.tar contains all the raw information required to visualize (on VMD), analyze, backmap, and eventually continue the simulations using Amber18 or higher. Step-By-Step tutorials for running, visualizing, and analyzing CG trajectories using SirahTools can be found at www.sirahff.com. Additionally, the file 6VYO_SIRAHcg_10us_prot.tar contains only the protein coordinates, while 6VYO_SIRAHcg_10us_prot_skip10ns.tar contains one frame every 10ns.
+
+To take a quick look at the trajectory:
+
+1- Untar the file 6VYO_SIRAHcg_10us_prot_skip10ns.tar
+
+2- Open the trajectory on VMD using the command line:
+
+vmd 6VYO_SIRAHcg_prot.prmtop 6VYO_SIRAHcg_prot_10us_skip10ns.ncrst 6VYO_SIRAHcg_prot_10us_skip10ns.nc -e sirah_vmdtk.tcl
+
+Note that you can use normal VMD drawing methods as vdw, licorice, etc., and coloring by restype, element, name, etc. 
+
+This dataset is part of the SIRAH-CoV2 initiative.
+
+For further details, please contact Florencia Klein (fklein@pasteur.edu.uy) or Sergio Pantano (spantano@pasteur.edu.uy)."	10.5281/zenodo.3747621	COVID-19|Coronavirus|drug design|simulation|SIRAH|Nucleocapsid|coarse-grain		COVID-19|Coronavirus|drug design|simulation|SIRAH|Nucleocapsid|coarse-grain		2020-04-10	ZENODO	SIRAH-CoV2  initiative:  RNA binding domain of nucleocapsid phosphoprotein  (PDB id:6VYO)	article	
+19	info:eu-repo/semantics/openAccess	Exequiel Barrera|Pablo Garay|Florencia Klein|Matías Machado|Martín Soñora|Sergio Pantano	https://zenodo.org/record/3742102	DATASET|FILE_SET	2020-04-11	"This dataset contains the trajectory of a 10 microseconds-long coarse-grained molecular dynamics simulation of SARS-CoV2 Endopeptidase NSP15 in its APO form (PDB id: 6W01, Bioassembly 1). Simulations have been performed using the SIRAH force field running with the Amber18 package at the Uruguayan National Center for Supercomputing (ClusterUY) under the conditions reported in Machado et al. JCTC 2019, adding 150 mM NaCl according to Machado & Pantano JCTC 2020. 
+
+The files contain all the raw information required to visualize (on VMD), analyze, backmap, and eventually continue the simulations using Amber18 or higher. Step-By-Step tutorials for running, visualizing, and analyzing CG trajectories using SirahTools can be found at www.sirahff.com. Additionally, the file 6W01_SIRAHcg_10us_prot.tar contain only the protein coordinates, while 6W01_SIRAHcg_10us_prot_skip10ns.tar contains one frame every 10ns.
+
+This dataset is part of the SIRAH-CoV2 initiative.
+
+For further details, please contact Exequiel Barrera (ebarrera@pasteur.edu.uy) or Sergio Pantano (spantano@pasteur.edu.uy)."	10.5281/zenodo.3742102	CoV2 Endonuclease|COVID-19|Coronavirus|drug design|simulation|SIRAH|SARS|coarse-grain		CoV2 Endonuclease|COVID-19|Coronavirus|drug design|simulation|SIRAH|SARS|coarse-grain		2020-04-10	ZENODO	SIRAH-CoV2  initiative: NSP15 Endonuclease  (PDB id:6W01)	article	
+20	http://creativecommons.org/licenses/by/4.0	Jan Homolak|Ivan Kodvanj|Davor Virag	https://data.mendeley.com/datasets/55bkfhg892	SOFTWARE_CODE|DATASET|TEXT|FILE_SET	2020-04-24	"Accompanying data used in the article ""Preliminary analysis of COVID-19 academic information patterns: A call for open science in the times of closed borders"" by Homolak J, Kodvanj I, Virag D. For more information and final output, see full article and code comments.
+Link to the preprint:
+https://www.preprints.org/manuscript/202003.0443/v2
+Link to GitHub Data and Code repository: 
+https://github.com/davorvr/covid-academic-pattern-analysis-v2
+
+"	10.17632/55bkfhg892.2	COVID-19|Publishing|Bibliometrics|Open Data		COVID-19|Publishing|Bibliometrics|Open Data	R code and Python script used to fetch metadata can be found at: https://github.com/davorvr/covid-academic-pattern-analysis-v2	2020-04-24	MENDELEY_DATA	Preliminary analysis of COVID-19 academic information patterns: A call for open science in the times of closed borders	article	2.0
