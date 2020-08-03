@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import argparse
 import json
 import os
 import re
@@ -12,12 +11,18 @@ import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 
-from crawler_producers.figshare.python.pycrawler.crawler_lib.article import Article
+from crawler_producers.figshare.python.pycrawler.crawler_lib.article import Article, File
 
 FIGSHARE_SEARCH_TERM_URL = "https://figshare.com/search?q=xtc%E2%80%8B%2C%20%E2%80%8Bdcd%2C%E2%80%8B%20%E2%80%8Bntraj%2C%20netcdf%2C%20trr%2C%20lammpstrj%2C%20xyz%2C%20binpos%2C%20hdf5%2C%20dtr%2C%20arc%2C%20tng%2C%20mdcrd%2C%20crd%2C%20dms%2C%20trj%2C%20ent%2C%20ncdf"
 
-FIGSHARE_ARTICLE_JS_QUERY = "return document.querySelectorAll('div[role=article]')"
+FIGSHARE_ARTICLE_JS_QUERY_ARTICLES = "return document.querySelectorAll('div[role=article]')"
+
+FIGSHARE_ARTICLE_JS_QUERY_PAGE_SIZE = "return document.querySelectorAll('span')"
+
 
 FIGSHARE_ALL_XPATH = ".//*"
 
@@ -25,14 +30,24 @@ FIGSHARE_ANCHOR_XPATH = ".//a"
 
 DEFAULT_IMPLICIT_WAIT_TIME = 30
 
-DEFAULT_SCROLL_DOWN_KEY_PRESSES = 150
+DEFAULT_SCROLL_DOWN_KEY_PRESSES = 40
 
 PRIMARY_EXEC_LIMIT = 5
 
-#SECONDARY_LINK_LIMIT =  30
-
 def agree_to_cookies(driver):
     driver.find_element_by_tag_name('button').send_keys(Keys.RETURN)
+
+def get_total_pages_from_spans(driver):
+    wait = WebDriverWait(driver, 5)
+    wait.until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, "div[role=article]")))
+    driver.implicitly_wait(3)
+    span_list = driver.execute_script(FIGSHARE_ARTICLE_JS_QUERY_PAGE_SIZE)
+    for span in span_list:
+        span_text = span.text
+        print(span_text)
+        if 'results found' in span_text:
+            return str(span_text).split(' ')[0]
 
 def get_primary_page_article_content(element):
     text_list = element.find_element_by_xpath(".//*").text
@@ -40,36 +55,54 @@ def get_primary_page_article_content(element):
     return text_list, href_list
 
 def fetch_all_current_articles(driver):
-    return driver.execute_script(FIGSHARE_ARTICLE_JS_QUERY)
+    return driver.execute_script(FIGSHARE_ARTICLE_JS_QUERY_ARTICLES)
 
 def execute_manual_scroll_down(driver):
     for _ in range(0, DEFAULT_SCROLL_DOWN_KEY_PRESSES):
-        driver.find_element_by_tag_name('button').send_keys(Keys.RETURN)
+        driver.find_element_by_tag_name('a').send_keys(Keys.ARROW_DOWN)
 
 def parse_text_list(text_list:str):
     text = text_list.split('\n')
-    assert(len(text) == 4)
-    article_type = text[0]
-    title = text[1]
-    ##TODO: parse posted on text, extract date and destination
-    posted_on_text = text[2]
-    author = text[3]
-    article = Article(title=title)
-    article.add_author(author)
-    return article
+    if (len(text) == 4):
+        article_type = text[0]
+        title = text[1]
+        ##TODO: parse posted on text, extract date and destination
+        posted_on_text = text[2]
+        print("posted on text: ", posted_on_text)
+        author = text[3]
+        article = Article(title=title)
+        article.add_author(author)
+        return article
+    if (len(text) == 3):
+        author = text[-1]
+        posted_on_text = text[-2]
+        print("posted on text: ", posted_on_text)
+        article = Article(title = text[-3])
+        article.add_author(author)
+        return article
+    print("no length match for text: ", text)
 
 def build_article_from_element(element):
-    text_list, href_list = get_primary_page_article_content(element)
-    article = parse_text_list(text_list)
-    assert(len(href_list) == 1)
-    article.source_url = href_list[0]
-    return article
+    try:
+        text_list, href = get_primary_page_article_content(element)
+        article = parse_text_list(text_list)
+        if  href.startswith("http"):
+            article.source_url = href
+        else:
+            print("could not add source url from hrefs: " + str(href))
+        print("built article: " + str(article))
+        return article
+    except Exception as e:
+        print("could not build article from element: ", str(e))
+        if ('text_list' in locals()):
+            print("text list: \n" , text_list, "\n\n")
+
 
 def create_webdriver():
     #if args.webdriver == "firefox":
    print("starting firefox driver")
    firefox_options = webdriver.FirefoxOptions()
-   firefox_options.add_argument('--headless')
+   #firefox_options.add_argument('--headless')
    driver = webdriver.Firefox(firefox_options=firefox_options)
    # elif args.webdriver == "chrome":
    #     print("starting chrome driver")
@@ -85,15 +118,64 @@ def create_webdriver():
    #     print("could not build webdriver on localhost")
    return driver
 
-def fetch_articles_and_scroll(driver):
-    article_list = list()
+def add_articles_from_page(driver, article_list):
+    wait = WebDriverWait(driver, 5)
+    wait.until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, "div[role=article]")))
+    driver.implicitly_wait(3)
     current_articles = fetch_all_current_articles(driver)
     for element in current_articles:
         article_list.append(build_article_from_element(element))
+    driver.implicitly_wait(3)
     execute_manual_scroll_down(driver)
     return article_list
 
+def fetch_articles_and_scroll(driver):
+    entries_per_page = 40
+    article_list = list()
+    driver.implicitly_wait(10)
+    agree_to_cookies(driver)
+    totals = get_total_pages_from_spans(driver)
+    parsed_totals = totals.replace(",", "")/entries_per_page
+    print("parsed totals: " , parsed_totals)
+    for _ in range(0,2):
+        add_articles_from_page(driver, article_list)
+    driver.close()
+    return article_list
 
+def enrich_article(article):
+    file_doi_js_query = "return document.querySelectorAll('div[data-doi*]');"
+    actual_article_link = "return document.querySelectorAll('a[class*=linkback-url]')"
+    keyword_js_query = "return document.querySelectorAll('a[href*=keyword]')"
+    driver = create_webdriver()
+    driver.get(article.source_url)
+    file_doi_element_list = driver.execute_script(file_doi_js_query)
+    file_doi_string = file_doi_element_list[0].getAttribute('data-doi')
+    file_obj = File(digital_object_id=file_doi_string)
+    keyword_element_list = driver.execute_script(keyword_js_query)
+    article_element_list = driver.execute_script(actual_article_link)
+    actual_article_title = article_element_list[0].get_attribute('innerHTML')
+    actual_article_doi = article_element_list[0].get_attribute('href').strip("https://doi.org/")
+    actual_article = Article(title=actual_article_title, source_url=actual_article_link,
+                             digital_object_id=actual_article_doi)
+    for kw_element in keyword_element_list:
+        actual_article.add_keyword(kw_element.get_attribute('title'))
+    actual_article.add_file(file_obj)
+    return article
+
+def fetch_articles():
+    driver = create_webdriver()
+    driver.get(FIGSHARE_SEARCH_TERM_URL)
+    article_list = fetch_articles_and_scroll(driver)
+    enriced_articles = []
+    for article in article_list:
+        try:
+            enriced_articles.append(enrich_article(article))
+        except Exception as e:
+            print("could not enrich article: " + str(article), str(e))
+
+if __name__ == "__main__":
+    fetch_articles()
 
 ##TODO refactor below:
 #def run(url: str) -> dict:
@@ -310,24 +392,24 @@ def fetch_articles_and_scroll(driver):
 #    return data
 
 
-def main(args: argparse.Namespace) -> None:
-    url = args.url
-    try:
-        json_response = json.dumps(run(url), indent=4)
-        print(json_response)
-    except Exception as exc:
-        print("failed to run crawler", exc)
+#def main(args: argparse.Namespace) -> None:
+#    url = args.url
+#    try:
+#        json_response = json.dumps(run(url), indent=4)
+#        print(json_response)
+#    except Exception as exc:
+#        print("failed to run crawler", exc)
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="command line tool to parse web links for bioinfo links")
-
-    parser.add_argument('--url', type=str, default=os.environ.get('URL'))
-    parser.add_argument('--webdriver', type=str, choices=["chrome", "firefox"], default=os.environ.get('WEBDRIVER'))
-    parser.add_argument('--webdriver_location', type=str, default=os.environ.get('WD_LOCATION'))
-    parser.add_argument('--output_location', type=str, default="console")
-    parser.add_argument('--use_selenium', action="store_true", default=False)
-    parser.add_argument('--parse_secondary', action="store_true", default=False)
-    args = parser.parse_args()
-    print("python args:{}".format(args))
-    main(args)
+#if __name__ == "__main__":
+#    parser = argparse.ArgumentParser(description="command line tool to parse web links for bioinfo links")
+#
+#    parser.add_argument('--url', type=str, default=os.environ.get('URL'))
+#    parser.add_argument('--webdriver', type=str, choices=["chrome", "firefox"], default=os.environ.get('WEBDRIVER'))
+#    parser.add_argument('--webdriver_location', type=str, default=os.environ.get('WD_LOCATION'))
+#    parser.add_argument('--output_location', type=str, default="console")
+#    parser.add_argument('--use_selenium', action="store_true", default=False)
+#    parser.add_argument('--parse_secondary', action="store_true", default=False)
+#    args = parser.parse_args()
+#    print("python args:{}".format(args))
+#    main(args)

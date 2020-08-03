@@ -1,3 +1,28 @@
+class File(object):
+    def __init__(self,
+                 file_name=None,
+                 url=None,
+                 digital_object_id=""):
+        self._file_name = file_name
+        self._url = url
+        self._digital_object_id = digital_object_id
+
+    @property
+    def file_name(self):
+        return self._file_name
+
+    @property
+    def url(self):
+        return self._url
+
+    @property
+    def digital_object_id(self):
+        return self._digital_object_id
+
+    def __str__(self):
+        return str(self.__dict__)
+
+
 class Article:
     def __init__(self,
                  title=None,
@@ -9,6 +34,7 @@ class Article:
                  files=[],
                  authors=[],
                  parent_request_url=""):
+
         self._title = title
         self._source_url = source_url
         self._keywords = keywords
@@ -47,8 +73,7 @@ class Article:
         if keyword and keyword not in self._keywords:
             self._keywords.append(keyword)
 
-    def add_file(self, file: str) -> None:
-        ##TODO: validation on file as url
+    def add_file(self, file: File) -> None:
         if file and file not in self._files:
             self._files.append(file)
 
