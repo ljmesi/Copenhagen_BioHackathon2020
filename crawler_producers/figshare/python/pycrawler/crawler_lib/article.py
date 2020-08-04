@@ -33,7 +33,9 @@ class Article:
                  parse_date=None,
                  files=[],
                  authors=[],
-                 parent_request_url=""):
+                 parent_request_url="",
+                 enriched = False,
+                 published = False):
 
         self._title = title
         self._source_url = source_url
@@ -44,6 +46,8 @@ class Article:
         self._files = files
         self._authors = authors
         self._parent_request_url = parent_request_url
+        self._enriched = enriched
+        self._published = published
 
     @property
     def title(self):
