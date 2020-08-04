@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
-import json
-import os
-import re
-import traceback
-import time
 import pandas as pd
 import threading
-
-import requests
+import boto3
+import os
 
 import logging
+
+REGION_NAME = 'REGION_NAME'
+SERVER_SECRET_KEY = 'AWS_SERVER_SECRET_KEY'
+SERVER_PUBLIC_KEY = 'AWS_SERVER_PUBLIC_KEY'
+SQS_URL = 'https://sqs.eu-central-1.amazonaws.com/397254617684/crawler_queue'
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -23,26 +23,23 @@ from selenium.webdriver.common.by import By
 
 from crawler_producers.figshare.python.pycrawler.crawler_lib.article import Article, File
 
+sqs_client = boto3.client('sqs',
+                          aws_access_key_id=os.environ.get(SERVER_PUBLIC_KEY),
+                          aws_secret_access_key=os.environ.get(SERVER_SECRET_KEY),
+                          region_name=os.environ.get(REGION_NAME))
+
 FIGSHARE_SEARCH_TERM_URL = "https://figshare.com/search?q=xtc%E2%80%8B%2C%20%E2%80%8Bdcd%2C%E2%80%8B%20%E2%80%8Bntraj%2C%20netcdf%2C%20trr%2C%20lammpstrj%2C%20xyz%2C%20binpos%2C%20hdf5%2C%20dtr%2C%20arc%2C%20tng%2C%20mdcrd%2C%20crd%2C%20dms%2C%20trj%2C%20ent%2C%20ncdf"
-
 FIGSHARE_ARTICLE_JS_QUERY_ARTICLES = "return document.querySelectorAll('div[role=article]')"
-
 FIGSHARE_ARTICLE_JS_QUERY_PAGE_SIZE = "return document.querySelectorAll('span')"
-
 FIGSHARE_ALL_XPATH = ".//*"
-
 FIGSHARE_ANCHOR_XPATH = ".//a"
-
 DEFAULT_IMPLICIT_WAIT_TIME = 30
-
 DEFAULT_SCROLL_DOWN_KEY_PRESSES = 40
-
 PRIMARY_EXEC_LIMIT = 5
 
 
 def agree_to_cookies(driver):
     driver.find_element_by_tag_name('button').send_keys(Keys.RETURN)
-
 
 def get_total_pages_from_spans(driver):
     wait = WebDriverWait(driver, 5)
@@ -76,7 +73,7 @@ def parse_text_list(text_list: str):
     if (len(text) == 4):
         article_type = text[0]
         title = text[1]
-        ##TODO: parse posted on text, extract date and destination
+        ##TODO: parse posted on text, extract date
         posted_on_text = text[2]
         print("posted on text: ", posted_on_text)
         author = text[3]
@@ -90,7 +87,7 @@ def parse_text_list(text_list: str):
         article = Article(title=text[-3])
         article.add_author(author)
         return article
-    print("no length match for text: ", text)
+    logger.warn("no length match for text: ", text)
 
 
 def build_article_from_element(element):
@@ -100,13 +97,12 @@ def build_article_from_element(element):
         if href.startswith("http"):
             article.source_url = href
         else:
-            print("could not add source url from hrefs: " + str(href))
-        print("built article: " + str(article))
+            logger.error("could not add source url from hrefs: " + str(href))
         return article
     except Exception as e:
-        print("could not build article from element: ", str(e))
+        logger.error("could not build article from element, error:", e)
         if ('text_list' in locals()):
-            print("text list: \n", text_list, "\n\n")
+            logger.info("text list: \n", text_list, "\n\n")
 
 
 def create_webdriver():
@@ -156,7 +152,6 @@ def fetch_articles_and_scroll(driver):
         add_articles_from_page(driver, article_list)
     return article_list
 
-
 def parse_file_obj(driver):
     file_doi_js_query = "return document.querySelectorAll('div[data-doi]')"
     file_doi_element_list = driver.execute_script(file_doi_js_query)
@@ -171,7 +166,6 @@ def parse_keywords(driver):
     for kw_element in keyword_element_list:
         keywords.append(kw_element.get_attribute('title'))
     return keywords
-
 
 def parse_parent_article(driver):
     wait = WebDriverWait(driver, 3)
@@ -201,7 +195,6 @@ def enrich_article(driver):
         logger.info("could not enrich article: ", e)
         return
 
-
 def fetch_articles():
     driver = create_webdriver()
     driver.get(FIGSHARE_SEARCH_TERM_URL)
@@ -212,18 +205,22 @@ def fetch_articles():
     for article in article_list:
         new_driver = create_webdriver()
         new_driver.get(article.source_url)
-        new_driver.implicitly_wait(3)
         wait = WebDriverWait(new_driver, 5)
         wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-doi]")))
+
         try:
             enriched_article = enrich_article(new_driver)
             if (enriched_article != None):
                 enriched_articles.append(enriched_article)
+                response = sqs_client.send_message(QueueUrl=SQS_URL, DelaySeconds=1,
+                                                   MessageBody=enriched_article.to_json())
             else:
                 ##need to handle this properly, this error is mostly due to
                 ##files that have no parent article
                 enriched_articles.append(article)
+                response = sqs_client.send_message(QueueUrl=SQS_URL, DelaySeconds=1, MessageBody=article.to_json())
+            logger.info("response message id: " + response['MessageId'])
             new_driver.close()
         except Exception as e:
             print("could not enrich article: " + str(e))
