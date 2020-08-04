@@ -1,3 +1,5 @@
+import json
+
 class File(object):
     def __init__(self,
                  file_name=None,
@@ -21,6 +23,10 @@ class File(object):
 
     def __str__(self):
         return str(self.__dict__)
+
+    def to_json(self):
+        return json.dumps({"file_name": self.file_name, "url": self.url,
+                           "digital_object_id": self.digital_object_id})
 
 
 class Article:
@@ -92,3 +98,18 @@ class Article:
 
     def __str__(self):
         return str(self.__dict__)
+
+    def to_json(self):
+        return json.dumps({
+            "title": self.title,
+           "source_url":self.source_url,
+           "keywords": self._keywords,
+           "digital_object_id":self.digital_object_id,
+           "description": self.description,
+           "parse_date": self._parse_date,
+           "files": [ x.to_json() for x in self._files],
+           "authors": self._authors,
+           "parent_request_url": self.parent_request_url,
+           "enriched": self._enriched,
+           "published": self._enriched
+        })

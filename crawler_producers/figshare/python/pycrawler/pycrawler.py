@@ -6,9 +6,9 @@ import os
 
 import logging
 
-REGION_NAME = 'REGION_NAME'
-SERVER_SECRET_KEY = 'AWS_SERVER_SECRET_KEY'
-SERVER_PUBLIC_KEY = 'AWS_SERVER_PUBLIC_KEY'
+REGION_NAME = os.environ.get('REGION_NAME')
+SERVER_SECRET_KEY = os.environ.get('AWS_SERVER_SECRET_KEY')
+SERVER_PUBLIC_KEY = os.environ.get('AWS_SERVER_PUBLIC_KEY')
 SQS_URL = 'https://sqs.eu-central-1.amazonaws.com/397254617684/crawler_queue'
 
 
@@ -24,9 +24,9 @@ from selenium.webdriver.common.by import By
 from crawler_producers.figshare.python.pycrawler.crawler_lib.article import Article, File
 
 sqs_client = boto3.client('sqs',
-                          aws_access_key_id=os.environ.get(SERVER_PUBLIC_KEY),
-                          aws_secret_access_key=os.environ.get(SERVER_SECRET_KEY),
-                          region_name=os.environ.get(REGION_NAME))
+                          aws_access_key_id=SERVER_PUBLIC_KEY,
+                          aws_secret_access_key=SERVER_SECRET_KEY,
+                          region_name=REGION_NAME)
 
 FIGSHARE_SEARCH_TERM_URL = "https://figshare.com/search?q=xtc%E2%80%8B%2C%20%E2%80%8Bdcd%2C%E2%80%8B%20%E2%80%8Bntraj%2C%20netcdf%2C%20trr%2C%20lammpstrj%2C%20xyz%2C%20binpos%2C%20hdf5%2C%20dtr%2C%20arc%2C%20tng%2C%20mdcrd%2C%20crd%2C%20dms%2C%20trj%2C%20ent%2C%20ncdf"
 FIGSHARE_ARTICLE_JS_QUERY_ARTICLES = "return document.querySelectorAll('div[role=article]')"
@@ -146,9 +146,9 @@ def fetch_articles_and_scroll(driver):
     logger.info("not waiting fetch articles and scroll")
     agree_to_cookies(driver)
     totals = get_total_pages_from_spans(driver)
-    parsed_totals = int(totals.replace(",", "")) / entries_per_page
+    parsed_totals = int(int(totals.replace(",", "")) / entries_per_page)
     logger.info("parsed totals: ", parsed_totals)
-    for _ in range(0, 1):
+    for _ in range(0, parsed_totals):
         add_articles_from_page(driver, article_list)
     return article_list
 
@@ -213,13 +213,13 @@ def fetch_articles():
             enriched_article = enrich_article(new_driver)
             if (enriched_article != None):
                 enriched_articles.append(enriched_article)
-                response = sqs_client.send_message(QueueUrl=SQS_URL, DelaySeconds=1,
+                response = sqs_client.send_message(QueueUrl=SQS_URL, DelaySeconds=0,
                                                    MessageBody=enriched_article.to_json())
             else:
                 ##need to handle this properly, this error is mostly due to
                 ##files that have no parent article
                 enriched_articles.append(article)
-                response = sqs_client.send_message(QueueUrl=SQS_URL, DelaySeconds=1, MessageBody=article.to_json())
+                response = sqs_client.send_message(QueueUrl=SQS_URL, DelaySeconds=0, MessageBody=article.to_json())
             logger.info("response message id: " + response['MessageId'])
             new_driver.close()
         except Exception as e:
