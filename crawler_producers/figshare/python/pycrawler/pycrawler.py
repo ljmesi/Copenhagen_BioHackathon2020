@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
 import pandas as pd
 import threading
+import re
 import boto3
 import os
 
 import logging
+
+from selenium.common.exceptions import StaleElementReferenceException
 
 REGION_NAME = os.environ.get('REGION_NAME')
 SERVER_SECRET_KEY = os.environ.get('AWS_SERVER_SECRET_KEY')
 SERVER_PUBLIC_KEY = os.environ.get('AWS_SERVER_PUBLIC_KEY')
 SQS_URL = 'https://sqs.eu-central-1.amazonaws.com/397254617684/crawler_queue'
 
+DATE_REGEX = r'.*([0-9]{2}[.][0-9]{2}[.][0-9]{4}).*'
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -42,16 +46,18 @@ def agree_to_cookies(driver):
     driver.find_element_by_tag_name('button').send_keys(Keys.RETURN)
 
 def get_total_pages_from_spans(driver):
-    wait = WebDriverWait(driver, 5)
-    wait.until(
-        EC.visibility_of_element_located((By.CSS_SELECTOR, "div[role=article]")))
-    driver.implicitly_wait(3)
+    wait_for_article_div(driver)
     span_list = driver.execute_script(FIGSHARE_ARTICLE_JS_QUERY_PAGE_SIZE)
     for span in span_list:
         span_text = span.text
         if 'results found' in span_text:
             return str(span_text).split(' ')[0]
 
+def wait_for_article_div(driver):
+    wait = WebDriverWait(driver, 5)
+    wait.until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, "div[role=article]")))
+    driver.implicitly_wait(3)
 
 def get_primary_page_article_content(element):
     text_list = element.find_element_by_xpath(".//*").text
@@ -73,43 +79,50 @@ def parse_text_list(text_list: str):
     if (len(text) == 4):
         article_type = text[0]
         title = text[1]
-        ##TODO: parse posted on text, extract date
         posted_on_text = text[2]
-        print("posted on text: ", posted_on_text)
+        date_match = re.match(DATE_REGEX, posted_on_text)
         author = text[3]
-        article = Article(title=title)
+        print("author: " + author)
+        article = Article(title=title, upload_date=None if date_match is None else date_match.group(1))
         article.add_author(author)
         return article
     if (len(text) == 3):
         author = text[-1]
         posted_on_text = text[-2]
-        print("posted on text: ", posted_on_text)
-        article = Article(title=text[-3])
+        date_match = re.match(DATE_REGEX, posted_on_text)
+        article = Article(title=text[-3], upload_date=None if date_match is None else date_match.group(1))
+        #TODO:FIx authors
+        print("author: " + author)
         article.add_author(author)
         return article
     logger.warn("no length match for text: ", text)
 
 
 def build_article_from_element(element):
-    try:
-        text_list, href = get_primary_page_article_content(element)
-        article = parse_text_list(text_list)
-        if href.startswith("http"):
-            article.source_url = href
-        else:
-            logger.error("could not add source url from hrefs: " + str(href))
-        return article
-    except Exception as e:
-        logger.error("could not build article from element, error:", e)
-        if ('text_list' in locals()):
-            logger.info("text list: \n", text_list, "\n\n")
+    current_attempt = 0
+    while(current_attempt < 3):
+        try:
+            text_list, href = get_primary_page_article_content(element)
+            article = parse_text_list(text_list)
+            if href.startswith("http"):
+                article.source_url = href
+            else:
+                logger.error("could not add source url from hrefs: " + str(href))
+            return article
+        except StaleElementReferenceException:
+            break
+        except Exception as e:
+            current_attempt += 1
+            logger.error("could not build article from element, error:", e)
+            if ('text_list' in locals()):
+                logger.info("text list: \n", text_list, "\n\n")
 
 
 def create_webdriver():
     # if args.webdriver == "firefox":
     print("starting firefox driver")
     firefox_options = webdriver.FirefoxOptions()
-    # firefox_options.add_argument('--headless')
+    firefox_options.add_argument('--headless')
     driver = webdriver.Firefox(firefox_options=firefox_options)
     # elif args.webdriver == "chrome":
     #     print("starting chrome driver")
@@ -127,13 +140,11 @@ def create_webdriver():
 
 
 def add_articles_from_page(driver, article_list):
-    wait = WebDriverWait(driver, 5)
-    wait.until(
-        EC.visibility_of_element_located((By.CSS_SELECTOR, "div[role=article]")))
-    driver.implicitly_wait(3)
+    wait_for_article_div(driver)
     current_articles = fetch_all_current_articles(driver)
     for element in current_articles:
-        article_list.append(build_article_from_element(element))
+        current_element = build_article_from_element(element)
+        article_list.append(current_element)
     execute_manual_scroll_down(driver)
     return article_list
 
@@ -141,22 +152,26 @@ def add_articles_from_page(driver, article_list):
 def fetch_articles_and_scroll(driver):
     entries_per_page = 40
     article_list = list()
-    logger.info("waiting fetch articles and scroll")
-    driver.implicitly_wait(3)
-    logger.info("not waiting fetch articles and scroll")
+    wait_for_article_div(driver)
     agree_to_cookies(driver)
     totals = get_total_pages_from_spans(driver)
-    parsed_totals = int(int(totals.replace(",", "")) / entries_per_page)
-    logger.info("parsed totals: ", parsed_totals)
-    for _ in range(0, parsed_totals):
+    totals_int = int(totals.replace(",", ""))
+    parsed_totals = int(totals_int / entries_per_page)
+    logger.info("parsed totals: " + str(parsed_totals))
+    for _ in range(0, 1):
         add_articles_from_page(driver, article_list)
+        driver.implicitly_wait(5)
     return article_list
 
 def parse_file_obj(driver):
     file_doi_js_query = "return document.querySelectorAll('div[data-doi]')"
+    file_url_js_query = "return document.querySelectorAll('a[class*=download]')"
     file_doi_element_list = driver.execute_script(file_doi_js_query)
+    file_url_element_list = driver.execute_script(file_url_js_query)
     file_doi_string = file_doi_element_list[0].get_attribute('data-doi')
-    return File(digital_object_id=file_doi_string)
+    file_url = file_url_element_list[0].get_attribute('href')
+    file_name =file_url_element_list[0].text
+    return File(file_name=file_name, digital_object_id=file_doi_string, url=file_url)
 
 
 def parse_keywords(driver):
@@ -171,21 +186,22 @@ def parse_parent_article(driver):
     wait = WebDriverWait(driver, 3)
     wait.until(
         EC.presence_of_element_located((By.CSS_SELECTOR, "a[class*=linkback-url]")))
-
-    actual_article_link = "return document.querySelectorAll('a[class*=linkback-url]')"
-    article_element_list = driver.execute_script(actual_article_link)
+    actual_article_js_query = "return document.querySelectorAll('a[class*=linkback-url]')"
+    article_element_list = driver.execute_script(actual_article_js_query)
     actual_article_title = article_element_list[0].get_attribute('innerHTML')
-    actual_article_doi = article_element_list[0].get_attribute('href').strip("https://doi.org/")
+    actual_article_url = article_element_list[0].get_attribute('href')
+    actual_article_doi = actual_article_url.strip("https://doi.org/")
     actual_article = Article(title=actual_article_title,
-                             source_url=actual_article_link,
+                             source_url=actual_article_url,
                              digital_object_id=actual_article_doi,
                              published=True, enriched=True)
     return actual_article
 
 
-def enrich_article(driver):
+def enrich_article(driver, original_article_url):
     try:
         file_obj = parse_file_obj(driver)
+        file_obj.url = original_article_url
         actual_article = parse_parent_article(driver)
         actual_article.add_file(file_obj)
         for kw in parse_keywords(driver):
@@ -201,8 +217,10 @@ def fetch_articles():
     article_list = fetch_articles_and_scroll(driver)
     driver.implicitly_wait(3)
     driver.close()
+    article_set = set(article_list)
+    logger.info("articles found: " + str(len(article_set)))
     enriched_articles = []
-    for article in article_list:
+    for article in article_set:
         new_driver = create_webdriver()
         new_driver.get(article.source_url)
         wait = WebDriverWait(new_driver, 5)
@@ -210,14 +228,16 @@ def fetch_articles():
             EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-doi]")))
 
         try:
-            enriched_article = enrich_article(new_driver)
+            enriched_article = enrich_article(new_driver, article.source_url)
             if (enriched_article != None):
+                enriched_article.parent_request_url = FIGSHARE_SEARCH_TERM_URL
                 enriched_articles.append(enriched_article)
                 response = sqs_client.send_message(QueueUrl=SQS_URL, DelaySeconds=0,
                                                    MessageBody=enriched_article.to_json())
             else:
                 ##need to handle this properly, this error is mostly due to
                 ##files that have no parent article
+                article.parent_request_url = FIGSHARE_SEARCH_TERM_URL
                 enriched_articles.append(article)
                 response = sqs_client.send_message(QueueUrl=SQS_URL, DelaySeconds=0, MessageBody=article.to_json())
             logger.info("response message id: " + response['MessageId'])
