@@ -43,7 +43,7 @@ BrowserAutomator
 #REGION_NAME = os.environ.get('REGION_NAME')
 #SERVER_SECRET_KEY = os.environ.get('AWS_SERVER_SECRET_KEY')
 #SERVER_PUBLIC_KEY = os.environ.get('AWS_SERVER_PUBLIC_KEY')
-#SQS_URL = 'https://sqs.eu-central-1.amazonaws.com/397254617684/crawler_queue'
+SQS_URL = 'https://sqs.eu-central-1.amazonaws.com/397254617684/crawler_queue'
 sqs_client = boto3.client('sqs')#,
 #                          aws_access_key_id=SERVER_PUBLIC_KEY,
 #                          aws_secret_access_key=SERVER_SECRET_KEY,
