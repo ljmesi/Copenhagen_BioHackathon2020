@@ -26,28 +26,26 @@ PRIMARY_EXEC_LIMIT = 5
 
 DATE_REGEX = r'.*([0-9]{2}[.][0-9]{2}[.][0-9]{4}).*'
 
-from crawler_producers.figshare.python.pycrawler.crawler_lib.article import Article, File
-from crawler_producers.figshare.python.pycrawler.crawler_lib.browser_automation import (
-                                                                                        wait_for_actual_article_link,
+from crawler_lib.article import Article, File
+from crawler_lib.browser_automation import (
+wait_for_actual_article_link,
 get_primary_page_article_content_href,
 get_primary_page_article_content_text,
 get_total_pages_from_spans,
 wait_for_article_div,
 fetch_all_current_articles,
 execute_manual_scroll_down,
-create_webdriver,
 agree_to_cookies,
-BrowserAutomator
-                                                                                        )
+BrowserAutomator)
 
-#REGION_NAME = os.environ.get('REGION_NAME')
-#SERVER_SECRET_KEY = os.environ.get('AWS_SERVER_SECRET_KEY')
-#SERVER_PUBLIC_KEY = os.environ.get('AWS_SERVER_PUBLIC_KEY')
+REGION_NAME = os.environ.get('REGION_NAME')
+SERVER_SECRET_KEY = os.environ.get('AWS_SERVER_SECRET_KEY')
+SERVER_PUBLIC_KEY = os.environ.get('AWS_SERVER_PUBLIC_KEY')
 SQS_URL = 'https://sqs.eu-central-1.amazonaws.com/397254617684/crawler_queue'
-sqs_client = boto3.client('sqs')#,
-#                          aws_access_key_id=SERVER_PUBLIC_KEY,
-#                          aws_secret_access_key=SERVER_SECRET_KEY,
-#                          region_name=REGION_NAME)
+sqs_client = boto3.client('sqs',
+                          aws_access_key_id=SERVER_PUBLIC_KEY,
+                          aws_secret_access_key=SERVER_SECRET_KEY,
+                          region_name=REGION_NAME)
 
 
 def parse_text_list(text_list: str):
@@ -111,7 +109,8 @@ def fetch_articles_and_scroll(driver):
     totals_int = int(totals.replace(",", ""))
     parsed_totals = int(totals_int / entries_per_page)
     logger.info("parsed totals: " + str(parsed_totals))
-    for _ in range(0, parsed_totals):
+    #for _ in range(0, parsed_totals):
+    for _ in range(0, 2):
         add_articles_from_page(driver, article_list)
         driver.implicitly_wait(5)
     return article_list
@@ -170,21 +169,22 @@ def fetch_articles():
     browser_automator.go_to_page(FIGSHARE_SEARCH_TERM_URL)
     #article_list = fetch_articles_and_scroll(driver)
     article_list = fetch_articles_and_scroll(browser_automator.web_driver)
-    browser_automator.web_driver.driver.implicitly_wait(3)
+    browser_automator.web_driver.implicitly_wait(3)
     browser_automator.close_webdriver()
 
     article_set = set(article_list)
     logger.info("articles found: " + str(len(article_set)))
     enriched_articles = []
     for article in article_set:
-        new_driver = create_webdriver()
-        new_driver.get(article.source_url)
-        wait = WebDriverWait(new_driver, 5)
+        new_automator = BrowserAutomator()
+        new_automator.load_webdriver()
+        new_automator.go_to_page(article.source_url)
+        wait = WebDriverWait(new_automator.web_driver, 5)
         wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-doi]")))
 
         try:
-            enriched_article = enrich_article(new_driver, article.source_url)
+            enriched_article = enrich_article(new_automator.web_driver, article.source_url)
             if (enriched_article != None):
                 enriched_article.parent_request_url = FIGSHARE_SEARCH_TERM_URL
                 enriched_articles.append(enriched_article)
@@ -197,7 +197,7 @@ def fetch_articles():
                 enriched_articles.append(article)
                 response = sqs_client.send_message(QueueUrl=SQS_URL, DelaySeconds=0, MessageBody=article.to_json())
             logger.info("response message id: " + response['MessageId'])
-            new_driver.close()
+            new_automator.close_webdriver()
         except Exception as e:
             print("could not enrich article: " + str(e))
             logger.exception(e)

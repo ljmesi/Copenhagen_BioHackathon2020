@@ -12,7 +12,6 @@ FIGSHARE_ARTICLE_JS_QUERY_ARTICLES = "return document.querySelectorAll('div[role
 FIGSHARE_ARTICLE_JS_QUERY_PAGE_SIZE = "return document.querySelectorAll('span')"
 DEFAULT_SCROLL_DOWN_KEY_PRESSES = 60
 
-
 class BrowserAutomator(object):
     def __init__(self):
         self.web_driver = None
@@ -78,24 +77,18 @@ def execute_manual_scroll_down(driver):
 
 ##
 def create_webdriver():
-    # if args.webdriver == "firefox":
+    import os
+    if os.path.isfile("/usr/src/app/chromedriver"):
+         print("starting chrome driver")
+         chrome_options = webdriver.ChromeOptions()
+         chrome_options.add_argument('--headless')
+         chrome_options.add_argument('--no-sandbox')
+         chrome_options.add_argument('--disable-dev-shm-usage')
+         return webdriver.Chrome("/usr/src/app/chromedriver", chrome_options=chrome_options)
     print("starting firefox driver")
     firefox_options = webdriver.FirefoxOptions()
-    #firefox_options.add_argument('--headless')
-    driver = webdriver.Firefox(firefox_options=firefox_options)
-    # elif args.webdriver == "chrome":
-    #     print("starting chrome driver")
-    #     if args.webdriver_location is None:
-    #         print("webdriver file location required, please add...")
-    #     chrome_options = webdriver.ChromeOptions()
-    #     chrome_options.add_argument('--headless')
-    #     chrome_options.add_argument('--no-sandbox')
-    #     chrome_options.add_argument('--disable-dev-shm-usage')
-    #     #driver = webdriver.Chrome()
-    #     driver = webdriver.Chrome(chrome_options=chrome_options)
-    # if driver is None:
-    #     print("could not build webdriver on localhost")
-    return driver
+    firefox_options.add_argument('--headless')
+    return webdriver.Firefox(firefox_options=firefox_options)
 
 
 
