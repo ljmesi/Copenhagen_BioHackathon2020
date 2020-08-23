@@ -1,6 +1,9 @@
 FROM python:buster
 #as of the buster debian release, this driver works:
-ARG URL="https://chromedriver.storage.googleapis.com/80.0.3987.106/chromedriver_linux64.zip"
+#result of `apt-get search chromium`
+#chromium/stable,stable 83.0.4103.116-1~deb10u3 amd64
+#  web browser
+ARG URL="https://chromedriver.storage.googleapis.com/83.0.4103.39/chromedriver_linux64.zip"
 
 WORKDIR /usr/src/app
 

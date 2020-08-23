@@ -12,11 +12,11 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
 def run(url: str) -> dict:
-    data = []
-    parse_html(data, url)
+    data = fetch_data_from_website(url)
     return {"data": data}
 
-def parse_html(messages: list, url: str):
+def fetch_data_from_website(url: str) -> list:
+    messages = list()
     try:
         driver = prepare_selenium_response(url)
         bs = BeautifulSoup(driver.page_source, "html.parser")
@@ -31,6 +31,7 @@ def parse_html(messages: list, url: str):
     except:
         selenium = {"status": "failed to parse"}
         messages.append({"selenium": selenium, "exception": traceback.format_exc()})
+    return messages
 
 
 def prepare_selenium_response(url: str) -> WebDriver:
