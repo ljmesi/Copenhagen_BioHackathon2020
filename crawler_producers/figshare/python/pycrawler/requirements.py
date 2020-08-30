@@ -4,3 +4,4 @@ requests
 selenium
 pandas
 pyyaml
+boto3

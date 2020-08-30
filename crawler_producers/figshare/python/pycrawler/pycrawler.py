@@ -2,11 +2,15 @@
 import re
 import boto3
 import os
+from typing import List
+import time
 
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement as web_element
+from selenium.webdriver.remote.webdriver import WebDriver as web_driver
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -33,7 +37,7 @@ get_primary_page_article_content_href,
 get_primary_page_article_content_text,
 get_total_pages_from_spans,
 wait_for_article_div,
-fetch_all_current_articles,
+fetch_all_current_article_elements,
 execute_manual_scroll_down,
 agree_to_cookies,
 BrowserAutomator)
@@ -42,11 +46,12 @@ REGION_NAME = os.environ.get('REGION_NAME')
 SERVER_SECRET_KEY = os.environ.get('AWS_SERVER_SECRET_KEY')
 SERVER_PUBLIC_KEY = os.environ.get('AWS_SERVER_PUBLIC_KEY')
 SQS_URL = 'https://sqs.eu-central-1.amazonaws.com/397254617684/crawler_queue'
-sqs_client = boto3.client('sqs',
-                          aws_access_key_id=SERVER_PUBLIC_KEY,
-                          aws_secret_access_key=SERVER_SECRET_KEY,
-                          region_name=REGION_NAME)
+sqs_client = boto3.client('sqs', region_name='eu-central-1')#,
+#                          aws_access_key_id=SERVER_PUBLIC_KEY,
+#                          aws_secret_access_key=SERVER_SECRET_KEY,
+#                          region_name=REGION_NAME)
 
+BUILD_ATTEMPT_LIMIT = 5
 
 def parse_text_list(text_list: str):
     text = text_list.split('\n')
@@ -69,7 +74,7 @@ def parse_text_list(text_list: str):
         print("author: " + author)
         article.add_author(author)
         return article
-    logger.warn("no length match for text: ", text)
+    logger.info("no length match for text: ", text)
 
 def build_article_from_element(element):
     current_attempt = 0
@@ -93,27 +98,61 @@ def build_article_from_element(element):
 
 def add_articles_from_page(driver, article_list):
     wait_for_article_div(driver)
-    current_articles = fetch_all_current_articles(driver)
+    current_articles = fetch_all_current_article_elements(driver)
     for element in current_articles:
         current_element = build_article_from_element(element)
         article_list.append(current_element)
     execute_manual_scroll_down(driver)
     return article_list
 
+def is_same_element_list(existing_list:List[web_element], new_list:List[web_element]):
+    return len(existing_list) == len(new_list) and [a for a in existing_list] == [b for b in new_list]
+
+def build_page_article_element_list(driver)->List[web_element]:
+    wait_for_article_div(driver)
+    return fetch_all_current_article_elements(driver)
+
+def fetch_new_articles(driver, existing_element_list:List[web_element]):
+    new_article_list = list()
+    is_same_list = True
+    while(is_same_list != False):
+        element_list = build_page_article_element_list(driver)
+        is_same_list = is_same_element_list(existing_element_list,
+                               element_list)
+        execute_manual_scroll_down(driver)
+    driver.implicitly_wait(5)
+    logger.info("building new element list")
+    new_list = build_page_article_element_list(driver)
+    for element in new_list:
+        article = build_article_from_element(element)
+        new_article_list.append(article)
+    return new_article_list
+
+def build_articles(driver, article_list, build_attempts:int):
+    current_element_list = build_page_article_element_list(driver)
+    articles = fetch_new_articles(driver,
+                                  current_element_list)
+    missing_articles = len([x for x in articles if x not in article_list])
+    logger.info('missing: ' + str(missing_articles))
+    if (missing_articles == 0):
+        driver.implicitly_wait(30)
+        time.sleep(5)
+        logger.info("no new articles found, incrementing build attempts")
+        build_attempts += 1
+        if (build_attempts > BUILD_ATTEMPT_LIMIT):
+            logger.info("assuming end of query and continuing")
+            return article_list
+    for article in articles:
+            article_list.append(article)
+    logger.info("current article count: " + str(len(article_list)))
+    return build_articles(driver, article_list, build_attempts)
+
 def fetch_articles_and_scroll(driver):
-    entries_per_page = 40
     article_list = list()
+    ##
     wait_for_article_div(driver)
     agree_to_cookies(driver)
-    totals = get_total_pages_from_spans(driver)
-    totals_int = int(totals.replace(",", ""))
-    parsed_totals = int(totals_int / entries_per_page)
-    logger.info("parsed totals: " + str(parsed_totals))
-    #for _ in range(0, parsed_totals):
-    for _ in range(0, 2):
-        add_articles_from_page(driver, article_list)
-        driver.implicitly_wait(5)
-    return article_list
+    return build_articles(driver, article_list, 0)
 
 def parse_file_obj(driver):
     file_doi_js_query = "return document.querySelectorAll('div[data-doi]')"
@@ -150,6 +189,7 @@ def parse_parent_article(driver):
 
 def enrich_article(driver, original_article_url):
     try:
+        print(driver.execute_script("return document.querySelectorAll('.fs-display > div:nth-child(1)')"))
         file_obj = parse_file_obj(driver)
         file_obj.url = original_article_url
         actual_article = parse_parent_article(driver)
@@ -162,12 +202,9 @@ def enrich_article(driver, original_article_url):
         return
 
 def fetch_articles():
-    #driver = create_webdriver()
-    #driver.get(FIGSHARE_SEARCH_TERM_URL)
     browser_automator = BrowserAutomator()
     browser_automator.load_webdriver()
     browser_automator.go_to_page(FIGSHARE_SEARCH_TERM_URL)
-    #article_list = fetch_articles_and_scroll(driver)
     article_list = fetch_articles_and_scroll(browser_automator.web_driver)
     browser_automator.web_driver.implicitly_wait(3)
     browser_automator.close_webdriver()

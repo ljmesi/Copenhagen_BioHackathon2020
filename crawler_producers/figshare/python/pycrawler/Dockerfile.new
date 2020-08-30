@@ -1,0 +1,19 @@
+FROM browserless/base:latest
+
+WORKDIR /usr/src/app
+
+COPY requirements.py ./
+
+RUN apt-get update -y
+
+RUN apt-get install -y python3
+
+RUN pip3 install -r requirements.py
+
+COPY ./start.sh /
+
+COPY . .
+
+RUN chmod 755 /start.sh
+
+ENTRYPOINT ["sh", "start.sh"]

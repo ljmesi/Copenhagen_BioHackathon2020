@@ -1,8 +1,7 @@
 import json
 
 class Author(object):
-    def __init__(self,
-            name=None):
+    def __init__(self,name=None):
         self._name = name
 
     @property
