@@ -10,7 +10,7 @@ from typing import List
 
 import logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 FIGSHARE_ARTICLE_JS_QUERY_ARTICLES = "return document.querySelectorAll('div[role=article]')"
 FIGSHARE_ARTICLE_JS_QUERY_PAGE_SIZE = "return document.querySelectorAll('span')"
@@ -39,7 +39,7 @@ class BrowserAutomator(object):
         self.web_driver.find_element_by_tag_name(tag_name).send_keys(Keys.ARROW_DOWN)
 
     def close_webdriver(self):
-        self.web_driver.close()
+        self.web_driver.quit()
 
 def agree_to_cookies(driver)->None:
     driver.find_element_by_tag_name('button').send_keys(Keys.RETURN)
@@ -63,9 +63,9 @@ def get_total_pages_from_spans(driver)->str:
         if 'results found' in span_text:
             return str(span_text).split(' ')[0]
 
-def get_primary_page_article_content_text(element:web_element):
-    #TODO: return list of str from split
-    text_list = element.find_element_by_xpath(".//*").text
+def get_primary_page_article_content_text(element:web_element)->List[str]:
+    text = element.find_element_by_xpath(".//*").text
+    text_list = text.split('\n')
     return text_list
 
 def get_primary_page_article_content_href(element:web_element)->str:
