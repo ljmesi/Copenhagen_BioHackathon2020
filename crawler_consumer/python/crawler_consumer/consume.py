@@ -4,45 +4,83 @@ import boto3
 import json
 import logging
 from typing import List, Dict
-from app import Article, Author, Keyword, File, db, ConsumerJSONEncoder
+from werkzeug.exceptions import NotFound
+from lib.models import Article, Author, Keyword, File, db
+from dateutil.parser import parse
+from lib.encoder import ConsumerJSONEncoder
+from sqlalchemy.sql.elements import ClauseElement
+from mysql.connector.errors import IntegrityError
+from sqlalchemy.exc import DatabaseError
+
+
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 queue_url = 'https://sqs.eu-central-1.amazonaws.com/397254617684/crawler_queue'
 
+# TODO: client should recognize environment
 sqs_client = boto3.client('sqs')
 
 
-def get_messages(max_number:int) -> Dict:
+def get_messages(max_number: int) -> Dict:
+    log.debug("fetching messages")
     return sqs_client.receive_message(
         QueueUrl=queue_url,
         AttributeNames=['All'],
         MaxNumberOfMessages=max_number)
 
-def fetch_article(article:Article)->Article:
+
+def get_or_create(model, **kwargs):
+    log.debug("checking kwargs")
+    for key, value in kwargs.items():
+        if key == "digital_object_id" and value != None:
+            instance = db.session.query(model).filter_by(digital_object_id=value).first()
+            if instance:
+                log.debug("querying using digital_object_id : " + value + " yeilded id: " + str(instance.id))
+                return instance
+        elif key == "title" and value != None:
+            instance = db.session.query(model).filter_by(title=value).first()
+            if instance:
+                log.debug("querying title : " + value + " yeilded id: " + str(instance.id))
+                return instance
     try:
-        return db.session.query(Article).filter(Article.digital_object_id == article.digital_object_id).first()
-    except Exception as e:
-        log.info("could not use doi from article, using title")
-        return db.session.query(Article).filter(Article.title == article.title).first()
+        log.debug("attempting to query for all parameters")
+        instance = db.session.query(model).filter_by(**kwargs).first()
+        if instance:
+            log.debug("querying using all parameters yeilded id: " + str(instance.id))
+            return instance
+    except DatabaseError as e:
+        log.info("could not fetch instance")
+    else:
+        log.debug("attempting to create new instance")
+        instance = model(**kwargs)
+        db.session.add(instance)
+        try:
+            db.session.commit()
+            db.session.refresh(instance)
+            log.info("returning instance with id: " + str(instance.id))
+            return instance
+        except IntegrityError as e:
+            log.info("could not commit session", exc_info=True)
 
-def keyword_exists(word:str):
-    word_encoded = word.encode(encoding="utf-8").decode("utf-8")
-    return True if db.session.query(Keyword.id).filter_by(word=word_encoded).scalar() is not None else False
 
-def file_exists(url:str):
-    return True if db.session.query(File.id).filter_by(url=url).scalar() is not None else False
-
-def article_exists(article:Article):
+def fetch_article(article: Article) -> Article:
     try:
-        return True if db.session.query(Article.id).filter_by(digital_object_id=article.digital_object_id).scalar() is not None else False
+        if Article.digital_object_id != None:
+            return db.session.query(Article).filter(
+                Article.digital_object_id == article.digital_object_id).first_or_404()
+    except NotFound as nf:
+        log.debug("article not found by digital object id, trying title")
+        if Article.title != None:
+            return db.session.query(Article).filter(
+                Article.title == article.title).first_or_404()
     except Exception as e:
-        log.info("could not find doi for article, using title for query")
-        return True if db.session.query(Article.id).filter_by(title=article.title).scalar() is not None else False
+        log.debug("could not find article")
+        return None
 
 
-def save_obj(obj)->None:
-    log.info("saving obj: " + str(obj))
+def save_obj(obj) -> None:
+    log.debug("saving obj: " + str(obj))
     try:
         db.session.add(obj)
     except Exception as e:
@@ -51,13 +89,14 @@ def save_obj(obj)->None:
     try:
         db.session.commit()
         db.session.refresh(obj)
-        log.info("object id generated: " + str(obj.id))
+        log.debug("object id generated: " + str(obj.id))
     except Exception as e:
         db.session.rollback()
         log.error("could not save obj: " + str(obj), exc_info=1)
 
-    #TODO
-def create_and_load_authors(authors:List[Dict], article:Article)->List[Author]:
+
+# TODO
+def create_and_load_authors(authors: List[Dict], article: Article) -> List[Author]:
     author_list = list()
     for author in authors:
         a = Author()
@@ -66,103 +105,80 @@ def create_and_load_authors(authors:List[Dict], article:Article)->List[Author]:
         author_list.append(a)
     return author_list
 
-def create_and_load_files(files:List[Dict], article:Article) -> List[File]:
+
+def create_and_load_files(files: List[Dict], article: Article) -> List[File]:
     file_list = list()
     for f_ in files:
-        log.info("creating File from file: " + str(f_))
-        if not file_exists(f_.get('url')):
-            f = File()
-            f.article_id = article.id
-            f.file_name = f_.get('file_name', "")
-            f.url = f_.get('url', "")
-            f.download_url = f_.get('download_url', "")
-            f.digital_object_id = f_.get('digital_object_id', "")
-            save_obj(f)
-            file_list.append(f)
-        else:
-            result = db.session.query(File).filter(File.file_name == f_['file_name'])
-            if result is not None:
-                file_obj = result.first()
-                if file_obj not in file_list:
-                    file_list.append(file_obj)
+        file_name = f_.get('file_name', '')
+        file_name = file_name.encode("utf-8")
+        log.debug("creating File from file: " + str(f_))
+        if article.id:
+            result = get_or_create(File, article_id=article.id,
+                                   file_name=file_name,
+                                   url=f_.get('url', ''),
+                                   download_url=f_.get('download_url', ''),
+                                   digital_object_id=f_.get('digital_object_id', ''))
+            file_list.append(result)
     return file_list
 
-def create_and_load_keywords(keywords:List[str])->List[Keyword]:
+
+def create_and_load_keywords(keywords: List[str]) -> List[Keyword]:
     keyword_list = list()
     for k_ in keywords:
-        if not keyword_exists(k_):
-            k = Keyword()
-            k.word = k_
-            save_obj(k)
-            keyword_list.append(k)
-        else:
-            result = db.session.query(Keyword).filter(Keyword.word == k_)
-            if result is not None:
-                kword = result.first()
-                if kword not in keyword_list:
-                    keyword_list.append(kword)
+        result = get_or_create(Keyword, word=k_)
+        keyword_list.append(result)
     return keyword_list
 
-def build_article_from_body(msg_body:Dict) -> Article:
-    doi = msg_body.get('digital_object_id', "")
-    art = Article()
-    log.info("building article from message body" + str(msg_body))
-    art.title = msg_body.get('title', "")
-    art.source_url = msg_body.get('source_url', "")
-    art.digital_object_id = doi if doi != '' else None
-    art.description = msg_body.get('description', "")
-    art.parse_date = msg_body.get('parse_date', "")
-    art.upload_date = msg_body.get('upload_date', "")
-    art.parent_request_url = msg_body.get('parent_request_url', "")
-    art.enriched = msg_body.get('enriched', "")
-    art.published = msg_body.get('published', "")
-    if article_exists(art):
-        existing_article = fetch_article(art)
-        existing_article.title = existing_article.title if not existing_article.title is None else art.title
-        existing_article.source_url = existing_article.source_url if not existing_article.source_url is None else art.source_url
-        existing_article.description = existing_article.description if not existing_article.description is None else art.description
-        existing_article.parse_date = existing_article.parse_date if not existing_article.parse_date is None else art.parse_date
-        existing_article.upload_date = existing_article.upload_date if not existing_article.upload_date is None else art.upload_date
-        existing_article.parent_request_url = existing_article.parent_request_url if not existing_article.parent_request_url is None else art.parent_request_url
-        existing_article.enriched = existing_article.enriched if not existing_article.enriched is None else art.enriched
-        existing_article.published = existing_article.published if not existing_article.published is None else art.published
-        save_obj(existing_article)
-        art = existing_article
 
+def build_article_from_body(msg_body: Dict) -> Article:
+    log.debug("building article from message body: \n")
+    doi = msg_body.get('digital_object_id', None)
+    if doi == '':
+        doi = None
+    parse_date = msg_body.get('parse_date', '')
+    upload_date = msg_body.get('upload_date', "")
+    title=msg_body.get('title', "")
+    art = get_or_create(Article,
+                        digital_object_id= doi,
+                        title=title,
+                        source_url=msg_body.get('source_url', ""),
+                        description=msg_body.get('description', ""),
+                        parse_date = str(parse(parse_date)) if parse_date else None,
+                        upload_date = str(parse(upload_date)) if upload_date else None,
+                        parent_request_url=msg_body.get('parent_request_url', ""),
+                        enriched=msg_body.get('enriched', False),
+                        published=msg_body.get('published', False))
+    if art:
+        try:
+            art.files = create_and_load_files(msg_body.get('files', []), art)
+            art.keywords = create_and_load_keywords(msg_body.get('keywords', []))
+        except Exception as e:
+            log.debug("could not load files and keywords", exc_info=1)
+        log.debug("returning article: " + str(art))
+        return art
     else:
-        if art.digital_object_id == '':
-            art.digital_object_id == None
-        save_obj(art)
-    art.files = create_and_load_files(msg_body.get('files', []), art)
-    art.keywords = create_and_load_keywords(msg_body.get('keywords', []))
-    try:
-        encoder = ConsumerJSONEncoder()
-        print(json.dumps(encoder.default(art), indent=4))
-    except Exception as e:
-        log.info("could not encode object", exc_info=1)
-    return art
+        log.debug("failed to create article with title: " + str(title))
 
-def create_articles(articles:List[Article])->List[int]:
+
+def create_articles(articles: List[Article]) -> List[int]:
     article_id_list = []
+    log.debug("starting post process of articles")
     for article in articles:
-        if not article_exists(article):
-            log.info("saving article: ", article.title)
-            if article.digital_object_id == '':
-                article.digital_object_id == None
+        fetch_result = fetch_article(article)
+        if fetch_result is None:
             save_obj(article)
-        else:
-            result = fetch_article(article)
-            if result is not None:
-                article_obj = result
-                if article_obj.id not in article_id_list:
-                    article_id_list.append(article_obj.id)
+        if article is not None and article.id != None:
+            log.debug("adding article id" + str(article.id))
+            article_id_list.append(article.id)
     return article_id_list
 
 
-if __name__ == '__main__':
-    article_list = []
-    msg_dict = get_messages(1)
-    for msg in msg_dict.get('Messages', []):
+def process_messages() -> List[int]:
+    msg_dict = get_messages(10)
+    msg_list = msg_dict.get('Messages', [])
+    log.debug("current message size: " + str(len(msg_list)))
+    article_list = list()
+    for msg in msg_list:
         msg_id = msg['MessageId']
         rec_handle = msg['ReceiptHandle']
         body_md5 = msg['MD5OfBody']
@@ -171,4 +187,11 @@ if __name__ == '__main__':
         article = build_article_from_body(msg_body)
         article_list.append(article)
     id_list = create_articles(article_list)
-    print("created articles with ids: " + str(id_list))
+    log.info("created articles with ids: " + str(id_list))
+    return id_list
+
+
+if __name__ == '__main__':
+    while (len(process_messages()) != 0):
+        log.info("processing messages")
+    log.info("finished processing messages")
