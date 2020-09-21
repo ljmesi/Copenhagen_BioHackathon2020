@@ -7,12 +7,8 @@ from typing import List, Dict
 from werkzeug.exceptions import NotFound
 from lib.models import Article, Author, Keyword, File, db
 from dateutil.parser import parse
-from lib.encoder import ConsumerJSONEncoder
-from sqlalchemy.sql.elements import ClauseElement
 from mysql.connector.errors import IntegrityError
 from sqlalchemy.exc import DatabaseError
-
-
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -30,6 +26,12 @@ def get_messages(max_number: int) -> Dict:
         MaxNumberOfMessages=max_number)
 
 
+def delete_message(rcpt_handle):
+    log.debug("deleting message with handle: " + str(rcpt_handle))
+    return sqs_client.delete_message(QueueUrl=queue_url,
+                                     ReceiptHandle=rcpt_handle)
+
+
 def get_or_create(model, **kwargs):
     log.debug("checking kwargs")
     for key, value in kwargs.items():
@@ -39,10 +41,14 @@ def get_or_create(model, **kwargs):
                 log.debug("querying using digital_object_id : " + value + " yeilded id: " + str(instance.id))
                 return instance
         elif key == "title" and value != None:
-            instance = db.session.query(model).filter_by(title=value).first()
-            if instance:
-                log.debug("querying title : " + value + " yeilded id: " + str(instance.id))
-                return instance
+            try:
+                instance = db.session.query(model).filter_by(title=value).first()
+                if instance:
+                    log.debug("querying title : " + value + " yeilded id: " + str(instance.id))
+                    return instance
+            except Exception as e:
+                log.error("could not filter for instance title", exc_info=True)
+                return None
     try:
         log.debug("attempting to query for all parameters")
         instance = db.session.query(model).filter_by(**kwargs).first()
@@ -52,7 +58,7 @@ def get_or_create(model, **kwargs):
     except DatabaseError as e:
         log.info("could not fetch instance")
     else:
-        log.debug("attempting to create new instance")
+        log.info("attempting to create new instance")
         instance = model(**kwargs)
         db.session.add(instance)
         try:
@@ -118,7 +124,8 @@ def create_and_load_files(files: List[Dict], article: Article) -> List[File]:
                                    url=f_.get('url', ''),
                                    download_url=f_.get('download_url', ''),
                                    digital_object_id=f_.get('digital_object_id', ''))
-            file_list.append(result)
+            if result:
+                file_list.append(result)
     return file_list
 
 
@@ -126,7 +133,8 @@ def create_and_load_keywords(keywords: List[str]) -> List[Keyword]:
     keyword_list = list()
     for k_ in keywords:
         result = get_or_create(Keyword, word=k_)
-        keyword_list.append(result)
+        if result:
+            keyword_list.append(result)
     return keyword_list
 
 
@@ -137,27 +145,27 @@ def build_article_from_body(msg_body: Dict) -> Article:
         doi = None
     parse_date = msg_body.get('parse_date', '')
     upload_date = msg_body.get('upload_date', "")
-    title=msg_body.get('title', "")
+    title = msg_body.get('title', "")
     art = get_or_create(Article,
-                        digital_object_id= doi,
+                        digital_object_id=doi,
                         title=title,
                         source_url=msg_body.get('source_url', ""),
                         description=msg_body.get('description', ""),
-                        parse_date = str(parse(parse_date)) if parse_date else None,
-                        upload_date = str(parse(upload_date)) if upload_date else None,
+                        parse_date=str(parse(parse_date)) if parse_date else None,
+                        upload_date=str(parse(upload_date)) if upload_date else None,
                         parent_request_url=msg_body.get('parent_request_url', ""),
                         enriched=msg_body.get('enriched', False),
                         published=msg_body.get('published', False))
-    if art:
-        try:
-            art.files = create_and_load_files(msg_body.get('files', []), art)
-            art.keywords = create_and_load_keywords(msg_body.get('keywords', []))
-        except Exception as e:
-            log.debug("could not load files and keywords", exc_info=1)
-        log.debug("returning article: " + str(art))
-        return art
-    else:
+    if not art:
         log.debug("failed to create article with title: " + str(title))
+        return None
+    try:
+        art.files = create_and_load_files(msg_body.get('files', []), art)
+        art.keywords = create_and_load_keywords(msg_body.get('keywords', []))
+    except Exception as e:
+        log.debug("could not load files and keywords", exc_info=1)
+    log.debug("returning article: " + str(art))
+    return art
 
 
 def create_articles(articles: List[Article]) -> List[int]:
@@ -185,7 +193,9 @@ def process_messages() -> List[int]:
         msg_body = json.loads(msg['Body'])
         msg_attributes = msg['Attributes']
         article = build_article_from_body(msg_body)
-        article_list.append(article)
+        if article:
+            article_list.append(article)
+            delete_message(rec_handle)
     id_list = create_articles(article_list)
     log.info("created articles with ids: " + str(id_list))
     return id_list
