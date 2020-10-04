@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 import datetime
 
-from flask import Flask
+from flask import Flask, render_template, request
 
-import yaml
+
 import logging
-from flask.json import JSONEncoder
+from flask.json import jsonify
 from lib.secrets import DbCredentials, LocalDbCredentials
-#from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -39,6 +37,33 @@ app.config["SQLALCHEMY_DATABASE_URI"] = get_db_connection()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config['MYSQL_DATABASE_CHARSET'] = 'utf8mb4'
 
-
 from lib.models import *
+from lib.encoder import *
 
+def paginate_articles(page=1, per_page=10):
+    article_list = []
+    try:
+        encoder = ConsumerJSONEncoder()
+        ##TODO: handle page, per_page strings better
+        items = Article.query.order_by(Article.id.desc()).paginate(int(page), int(per_page)).items
+        article_list = [encoder.default(x) for x in items if x]
+    except Exception:
+        log.info("could not get article list", exc_info=True)
+    return article_list
+
+@app.route('/')
+def get_root():
+    log.info("sending root")
+    return render_template('index.html')
+
+@app.route('/swagger')
+def get_docs():
+    return render_template('swaggerui.html')
+
+@app.route('/articles')
+def get_articles():
+    page = request.args.get('page', 1)
+    per_page = request.args.get('per_page', 10)
+    log.info("page: " + str(page) + " per_page: " + str(per_page))
+    articles = paginate_articles(page, per_page)
+    return jsonify(articles)

@@ -1,0 +1,55 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "This is the swagger page for the md crawler api [http://api.mdcrawler.io](http://api.mdcrawler.io). For this sample, you can use the api key `special-key` to test the authorization     filters.",
+    "version": "1.0.0",
+    "title": "Swagger Petstore",
+    "termsOfService": "http://mdcrawler.io/terms/",
+    "contact": {
+      "email": "apiteam@mdcrawler.io"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "host": "petstore.swagger.io",
+  "basePath": "/v1",
+  "tags": [
+    {
+      "name": "article",
+      "description": "Articles known to the mdcrawler",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "http://mdcrawler.io"
+      }
+    }
+  ],
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/articles": {
+      "get": {
+        "tags": [
+          "articles"
+        ],
+        "summary": "List all articles",
+        "description": "",
+        "produces": [
+          "application/xml",
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    }
+  }
+}
