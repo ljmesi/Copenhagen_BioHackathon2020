@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from lib.models import Article, File, Keyword
+from lib.models import *
 from flask.json import JSONEncoder
 
 class ConsumerJSONEncoder(JSONEncoder):

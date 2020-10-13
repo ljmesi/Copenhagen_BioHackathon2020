@@ -41,12 +41,27 @@ paths:
       responses:
         "200":
           description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: string
+                example: pong
         "404":
           description: "Not found"
             # security:
             # - petstore_auth:
             #   - "write:pets"
             #   - "read:pets"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+              example:
+                id: 10
       parameters:
         - in: query
           name: page
@@ -58,6 +73,76 @@ paths:
           schema:
             type: integer
           description: Number of items to return per page
+  /articles/{articleId}:
+    get:
+      tags:
+      - "articles"
+      summary: "Find article by ID"
+      description: "Returns a single article"
+      operationId: "getArticleById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "articleId"
+        in: "path"
+        description: "ID of article to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        "200":
+          description: "successful operation"
+          # schema:
+          #   $ref: "#/definitions/Article"
+        "400":
+          description: "Invalid ID supplied"
+        "404":
+          description: "Article not found"
+      security:
+      - api_key: []
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        title:
+          type: "string"
+        source_url:
+          type: "string"
+        keywords:
+          type: "array"
+        files:
+          type: "array"
+        digital_object_id:
+          type: "string"
+        parent_request_url:
+          type: "string"
+        description:
+          type: "string"
+        parse_date:
+          type: "string"
+          format: "date-time"
+        upload_date:
+          type: "string"
+          format: "date-time"
+        created_date:
+          type: "string"
+          format: "date-time"
+        modified_date:
+          type: "string"
+          format: "date-time"
+        parsed:
+          type: "boolean"
+        enriched:
+          type: "boolean"
+        published:
+          type: "boolean"
+
+
+
+
+
+
+
           #      parameters:
           #      - name: "status"
           #        in: "query"
