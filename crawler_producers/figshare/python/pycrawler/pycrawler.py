@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import boto3
-import os
 from typing import List
 
 from selenium.webdriver.support.ui import WebDriverWait
@@ -12,7 +10,7 @@ from selenium.common.exceptions import TimeoutException
 
 import logging
 
-from crawler_lib.figshare_parser import FigshareWebParser
+from crawler_lib.webparser import FigshareWebParser
 
 FETCH_LIMIT = 10
 BUILD_ATTEMPT_LIMIT = 5
@@ -24,21 +22,10 @@ FIGSHARE_SEARCH_TERM_URL = "https://figshare.com/search?q=xtc%E2%80%8B%2C%20%E2%
 
 from crawler_lib.article import Article
 from crawler_lib.browser_automation import FigshareBrowserAutomator
-
-# TODO: refactor message producer
-# REGION_NAME = os.environ.get('REGION_NAME')
-# SERVER_SECRET_KEY = os.environ.get('AWS_SERVER_SECRET_KEY')
-# SERVER_PUBLIC_KEY = os.environ.get('AWS_SERVER_PUBLIC_KEY')
-SQS_URL = 'https://sqs.eu-central-1.amazonaws.com/397254617684/crawler_queue'
-sqs_client = boto3.client('sqs', region_name='eu-central-1')  # ,
-
-
-# aws_access_key_id=SERVER_PUBLIC_KEY,
-# aws_secret_access_key=SERVER_SECRET_KEY)
+from crawler_lib.article_producer import FigshareArticleProducer
 
 def is_same_element_list(existing_list: List[WElement], new_list: List[WElement]):
     return len(existing_list) == len(new_list) and [a for a in existing_list] == [b for b in new_list]
-
 
 def fetch_new_articles(browser_automator: FigshareBrowserAutomator, existing_element_list: List[WElement]):
     new_article_list = list()
@@ -96,15 +83,21 @@ def enrich_article(driver: WDriver, original_article_url: str) -> Article:
         figshare_parser = FigshareWebParser()
         # TODO: parse pre formatted text
         # print(driver.execute_script("return document.querySelectorAll('.fs-display > div:nth-child(1)')"))
-        actual_article = figshare_parser.parse_parent_article(driver)
-        file_obj_list = figshare_parser.parse_file_obj(driver)
-        if file_obj_list:
-            for file_obj in file_obj_list:
-                # file_obj.url = original_article_url
-                actual_article.add_file(file_obj)
-                for kw in figshare_parser.parse_keywords(driver):
-                    actual_article.add_keyword(kw)
-        return actual_article
+        child_article = figshare_parser.parse_parent_article(driver)
+        if child_article != None:
+          log.info("child article built: " + str(child_article.to_json()))
+          file_obj_list = figshare_parser.parse_file_obj(driver)
+          log.info("file_obj list size: " + str(len(file_obj_list)))
+          if file_obj_list:
+              log.info("files found in article")
+              for file_obj in file_obj_list:
+                  file_obj.refering_url = original_article_url
+                  child_article.add_file(file_obj)
+                  for kw in figshare_parser.parse_keywords(driver):
+                      child_article.add_keyword(kw)
+                  for fkw in file_obj._keywords:
+                      child_article.add_keyword(fkw)
+          return child_article
     except TimeoutException:
         log.info("timeout exception reached")
     except Exception as e:
@@ -112,35 +105,35 @@ def enrich_article(driver: WDriver, original_article_url: str) -> Article:
     log.info("endinging enrich article")
 
 
-def parse_and_send_page(article: Article, enriched_articles: List[Article]):
+def enrich_and_send_article(article: Article,
+                            processed_articles: List[Article]):
     browser_automator = FigshareBrowserAutomator()
     browser_automator.load_webdriver()
     log.info("parsing secondary page")
     browser_automator.go_to_page(article.source_url)
-    wait = WebDriverWait(browser_automator.web_driver, 3)
+    wait = WebDriverWait(browser_automator.web_driver, 5)
+    producer = FigshareArticleProducer()
     try:
         log.info("wating for css selector")
         wait.until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-doi]")))
         enriched_article = enrich_article(browser_automator.web_driver, article.source_url)
-        if enriched_article != None:
-            enriched_article.parent_request_url = FIGSHARE_SEARCH_TERM_URL
-            enriched_articles.append(enriched_article)
-            response = sqs_client.send_message(QueueUrl=SQS_URL, DelaySeconds=0,
-                                               MessageBody=enriched_article.to_json())
-        else:
-            ##need to handle this properly, this error is mostly due to
-            ##files that have no parent article
-            article.parent_request_url = FIGSHARE_SEARCH_TERM_URL
-            enriched_articles.append(article)
-            response = sqs_client.send_message(QueueUrl=SQS_URL, DelaySeconds=0, MessageBody=article.to_json())
-        log.info("response message id: " + response['MessageId'])
+        log.info("enriched article: " + enriched_article.to_json())
+        send(article if enriched_article == None else enriched_article,
+             processed_articles, producer)
     except TimeoutException as er:
         log.info("timeout exception reached")
     except Exception as e:
         log.info("could not enrich article", exc_info=True)
+    producer.close_client()
     browser_automator.close_webdriver()
 
+def send(article, processed_articles: List[Article],
+         producer: FigshareArticleProducer):
+    article.parent_request_url = FIGSHARE_SEARCH_TERM_URL
+    processed_articles.append(article)
+    response = producer.send_article(article)
+    log.info("response message id: " + response['MessageId'])
 
 def fetch_articles() -> None:
     browser_automator = FigshareBrowserAutomator()
@@ -156,10 +149,9 @@ def fetch_articles() -> None:
     enriched_articles = []
     articles_sent = 0
     for article in article_set:
-        parse_and_send_page(article, enriched_articles)
+        enrich_and_send_article(article, enriched_articles)
         articles_sent += 1
         log.info("finished parsing secondary page, articles sent: " + str(articles_sent))
-
 
 if __name__ == "__main__":
     fetch_articles()

@@ -5,3 +5,4 @@ selenium
 pandas
 pyyaml
 boto3
+mypy-boto3-sqs

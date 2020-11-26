@@ -1,7 +1,8 @@
 import json
 
+
 class Author(object):
-    def __init__(self,name=None):
+    def __init__(self, name=None):
         self._name = name
 
     @property
@@ -12,20 +13,24 @@ class Author(object):
     def name(self, value):
         self._name = value
 
+
 class File(object):
     def __init__(self,
                  file_name=None,
                  url=None,
                  download_url=None,
-                 digital_object_id=""):
+                 digital_object_id="",
+                 file_description="",
+                 keywords=[],
+                 refering_url=""):
         self._file_name = file_name
         self._url = url
         self._download_url = download_url
         self._digital_object_id = digital_object_id
-        #TODO: add file description and populate with much data
-        #TODO: add keywords
-        #TODO: add refering url (parent url)
-        #TODO: check authors required
+        self._file_description = file_description
+        self._keywords = keywords
+        self._refering_url = refering_url
+        # TODO: check authors required
 
     @property
     def file_name(self):
@@ -43,9 +48,25 @@ class File(object):
     def digital_object_id(self):
         return self._digital_object_id
 
+    @property
+    def file_description(self):
+        return self._file_description
+
+    @property
+    def refering_url(self):
+        return self._refering_url
+
+    def add_keyword(self, keyword: str) -> None:
+        if keyword and keyword not in self._keywords:
+            self._keywords.append(keyword)
+
     @url.setter
     def url(self, value):
         self._url = value
+
+    @refering_url.setter
+    def refering_url(self, value):
+        self._refering_url = value
 
     def __str__(self):
         return str(self.__dict__)
@@ -53,8 +74,10 @@ class File(object):
     def to_json(self):
         return json.dumps({"file_name": self.file_name, "url": self.url,
                            "download_url": self.download_url,
-                           "digital_object_id": self.digital_object_id})
-
+                           "digital_object_id": self.digital_object_id,
+                           "file_description":self.file_description,
+                           "refering_url": self.refering_url,
+                           "keywords": self._keywords})
 
 
 class Article:

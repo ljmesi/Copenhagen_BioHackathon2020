@@ -74,6 +74,7 @@ class FigshareWebParser(AbstractWebParser):
         log.info("no length match for text: ", text_list)
 
     def parse_file_obj(self, driver: WDriver) -> List[File]:
+        log.info("parsing file objects")
         file_list = []
         try:
             file_url_query = driver.execute_script(FIGSHARE_DOCUMENT_QUERY)
@@ -85,20 +86,20 @@ class FigshareWebParser(AbstractWebParser):
             div_xpath = driver.find_element_by_xpath(FIGSHARE_DOWNLOAD_XPATH).text.splitlines()
             page_info = div_xpath[page_start:-page_end]
             log.info("page info: " + str(page_info))
-           # downloads_cite_index = div_xpath.index("Cite")
-           # downloads_start = div_xpath.index("Explore more content")
-           # file_descriptions = div_xpath[downloads_start:downloads_cite_index]
-           # log.info("file descriptions: " + file_descriptions)
-           # file_name = div_xpath[ downloads_cite_index - 1 ]
-           # log.info("file name: " + file_name)
-           # #DEBUGGING
-           # #log.info("file_download_links: " + str(file_download_links))
-           # for url in file_download_links:
-           #     file_name = None if len(file_url_query) < 1 else file_url_query[0].text
-           #     log.info("file name from document query: " + file_name)
-           #     file_list.append(self.build_file_obj(file_name,
-           #                                          None if len(file_url_query) < 1 else file_doi_query[0].get_attribute('data-doi'),
-           #                                          url))
+            downloads_cite_index = div_xpath.index("Cite")
+            downloads_start = div_xpath.index("Explore more content")
+            file_descriptions = div_xpath[downloads_start:downloads_cite_index]
+            log.info("file descriptions: " + file_descriptions)
+            file_name = div_xpath[ downloads_cite_index - 1 ]
+            log.info("file name: " + file_name)
+            #DEBUGGING
+            #log.info("file_download_links: " + str(file_download_links))
+            for url in file_download_links:
+                file_name = None if len(file_url_query) < 1 else file_url_query[0].text
+                log.info("file name from document query: " + file_name)
+                file_list.append(self.build_file_obj(file_name,
+                                                     None if len(file_url_query) < 1 else file_doi_query[0].get_attribute('data-doi'),
+                                                     url))
         except Exception:
             log.info("could not parse file object attribute from element", exc_info=True)
         return file_list
@@ -111,16 +112,18 @@ class FigshareWebParser(AbstractWebParser):
     @staticmethod
     def parse_keywords(driver: WDriver) -> List[str]:
         keywords = list()
-        keyword_js_query = FIGSHARE_KEYWORD_QUERY
-        keyword_element_list = driver.execute_script(keyword_js_query)
+        keyword_element_list = driver.execute_script(FIGSHARE_KEYWORD_QUERY)
         for kw_element in keyword_element_list:
             keywords.append(kw_element.get_attribute('title'))
         return keywords
 
     def parse_parent_article(self, driver: WDriver) -> Article:
         wait_for_child_article_link(driver)
-        actual_article_js_query = FIGSHARE_PARENT_ARTICLE_QUERY
-        article_element_list = driver.execute_script(actual_article_js_query)
+        child_article_js_query = FIGSHARE_PARENT_ARTICLE_QUERY
+        if child_article_js_query == None:
+            log.error("child article query failed")
+            return
+        article_element_list = driver.execute_script(child_article_js_query)
         return self.build_child_article(article_element_list[0].get_attribute('innerHTML'),
                                         article_element_list[0].get_attribute('href').strip("https://doi.org/"),
                                         article_element_list[0].get_attribute('href'))
@@ -162,10 +165,8 @@ class FigshareWebParser(AbstractWebParser):
 
     @staticmethod
     def build_child_article(actual_article_doi, actual_article_title, actual_article_url):
-        return Article(title=actual_article_title,
-                       source_url=actual_article_url,
-                       digital_object_id=actual_article_doi,
-                       published=True, enriched=True)
+        return Article(title=actual_article_title, source_url=actual_article_url,
+                       digital_object_id=actual_article_doi, published=True, enriched=True)
 
     @staticmethod
     def build_file_obj(file_name, file_doi_string, file_url):

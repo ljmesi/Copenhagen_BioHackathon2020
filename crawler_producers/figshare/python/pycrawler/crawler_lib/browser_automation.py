@@ -43,7 +43,7 @@ class BrowserAutomator(object):
         self.web_driver.find_element_by_tag_name(tag_name).send_keys(Keys.ARROW_DOWN)
 
     def close_webdriver(self):
-        print("closing webdriver")
+        log.info("closing webdriver")
         self.web_driver.quit()
 
     def get_webdriver(self):
@@ -52,13 +52,13 @@ class BrowserAutomator(object):
     def create_webdriver(self) -> web_driver:
         import os
         if os.path.isfile(LINUX_CHROMEDRIVER_PATH):
-            print("starting chrome driver")
+            log.info("starting chrome driver")
             chrome_options = webdriver.ChromeOptions()
             chrome_options.add_argument('--headless')
             chrome_options.add_argument('--no-sandbox')
             chrome_options.add_argument('--disable-dev-shm-usage')
             return webdriver.Chrome(LINUX_CHROMEDRIVER_PATH, chrome_options=chrome_options)
-        print("starting firefox driver")
+        log.info("starting firefox driver")
         firefox_options = webdriver.FirefoxOptions()
         # firefox_options.add_argument('--headless')
         return webdriver.Firefox(firefox_options=firefox_options)
