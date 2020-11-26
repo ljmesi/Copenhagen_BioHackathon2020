@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import datetime
 
-from flask import Flask, render_template, request
-
+from flask import Flask, render_template, request, Response
+from flask_restful import Resource
+from flask_restful import Api
 
 import logging
 from flask.json import jsonify
@@ -33,6 +34,7 @@ def get_db_connection():
         )
 
 app = Flask(__name__)
+api = Api(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = get_db_connection()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config['MYSQL_DATABASE_CHARSET'] = 'utf8mb4'
@@ -85,16 +87,25 @@ def get_articles():
 
 @app.route('/articles/<int:article_id>', methods=["GET"])
 def get_article_by_id(article_id):
-    page = request.args.get('article_id', None)
     log.info("article id: " + str(article_id))
     article = fetch_article(article_id)
     return jsonify(article)
 
-@app.route('/articles/<int:article_id>', methods=["UPDATE", "POST"])
+@app.route('/articles/<int:article_id>', methods=["UPDATE"])
 def update_article_by_id(article_id):
     log.info("article id: " + str(article_id))
+
     data = request.form
-    ##TODO: properly deserialize data and update article
     app.logger.info("data received from post: " + str(data))
+
     article = fetch_article(article_id)
     return jsonify(article)
+
+class GetRequest(Resource):
+    def return_response(self):
+        return Response(response=self.api_response, mimetype=self.mimetype)
+
+
+class PostResource(Resource):
+    def return_response(self):
+        return Response(response=self.api_response, mimetype=self.mimetype)

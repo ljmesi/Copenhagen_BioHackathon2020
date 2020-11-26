@@ -7,7 +7,7 @@ ARG URL="https://chromedriver.storage.googleapis.com/83.0.4103.39/chromedriver_l
 
 WORKDIR /usr/src/app
 
-COPY requirements.py ./
+COPY requirements.txt ./
 
 RUN cat /etc/apt/sources.list
 
@@ -19,7 +19,7 @@ RUN echo $URL
 
 RUN wget $URL;unzip chromedriver_linux64.zip
 
-RUN pip3 install -r requirements.py
+RUN pip3 install -r requirements.txt
 
 COPY ./start.sh /
 

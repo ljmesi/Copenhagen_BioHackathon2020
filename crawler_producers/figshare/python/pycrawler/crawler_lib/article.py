@@ -22,6 +22,10 @@ class File(object):
         self._url = url
         self._download_url = download_url
         self._digital_object_id = digital_object_id
+        #TODO: add file description and populate with much data
+        #TODO: add keywords
+        #TODO: add refering url (parent url)
+        #TODO: check authors required
 
     @property
     def file_name(self):
