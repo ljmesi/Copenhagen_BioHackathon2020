@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!--recepies
+            %logger{36}.%M - %msg%n
+            -->
+            <pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) [%blue(%t)]  %yellow(%C{1.}): %msg%n%throwable
+            </pattern>
+        </encoder>
+    </appender>
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %black(%d{ISO8601}) %highlight(%-5level) [%blue(%t)] %yellow(%C{1.}): %msg%n%throwable
+            </Pattern>
+        </layout>
+    </appender>
+    <logger name="org.hibernate" additivity="false" level="DEBUG"/>
+    <logger name="org.hibernate" additivity="false" level="INFO"/>
+    <logger name="org.apache" additivity="false" level="DEBUG"/>
+    <logger name="org.apache" additivity="false" level="INFO"/>
+    <logger name="com.zaxxer.hikari" additivity="false" level="DEBUG"/>
+    <logger name="com.zaxxer.hikari" additivity="false" level="INFO"/>
+    <logger name="org.springframework.boot.web.embedded.tomcat" additivity="false" level="DEBUG"/>
+    <logger name="org.springframework.boot.web.embedded.tomcat" additivity="false" level="INFO"/>
+    <logger name="org.openqa.selenium" additivity="false" level="DEBUG"/>
+    <logger name="org.openqa.selenium" additivity="false" level="INFO"/>
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

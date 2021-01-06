@@ -1,0 +1,6 @@
+*.iml*
+*.idea*
+*target*
+config/*.json
+*.DS_Store.*
+*DS_Store*
