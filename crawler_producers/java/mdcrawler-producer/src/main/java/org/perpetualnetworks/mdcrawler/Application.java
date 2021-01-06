@@ -25,18 +25,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Import({JacksonAutoConfiguration.class,
         PropertySourcesPlaceholderConfigurer.class,
         ThymeleafAutoConfiguration.class})
-public class Application implements CommandLineRunner {
-
-    @Autowired
-    FigshareScraper figshareScraper;
+public class Application {
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
-    }
-
-    @Override
-    @SneakyThrows
-    public void run(String... args) {
-        figshareScraper.runScraper();
     }
 }

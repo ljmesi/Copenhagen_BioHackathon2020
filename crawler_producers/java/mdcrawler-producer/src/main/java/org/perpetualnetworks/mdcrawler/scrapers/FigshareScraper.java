@@ -3,6 +3,7 @@ package org.perpetualnetworks.mdcrawler.scrapers;
 import com.google.common.collect.ImmutableSet;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.WebElement;
+import org.perpetualnetworks.mdcrawler.config.FigshareConfiguration;
 import org.perpetualnetworks.mdcrawler.converters.FigshareArticleConverter;
 import org.perpetualnetworks.mdcrawler.models.Article;
 import org.perpetualnetworks.mdcrawler.parsers.WebParser;
@@ -21,16 +22,17 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class FigshareScraper {
-    private static final String FIGSHARE_SEARCH_TERM_URL = "https://figshare.com/search?q=xtc%E2%80%8B%2C%20%E2%80%8Bdcd%2C%E2%80%8B%20%E2%80%8Bntraj%2C%20netcdf%2C%20trr%2C%20lammpstrj%2C%20xyz%2C%20binpos%2C%20hdf5%2C%20dtr%2C%20arc%2C%20tng%2C%20mdcrd%2C%20crd%2C%20dms%2C%20trj%2C%20ent%2C%20ncdf";
-    private static final Integer FETCH_LIMIT = 10;
+    private final FigshareConfiguration figshareConfiguration;
     private final BrowserAutomatorImpl browserAutomator;
     private final FigshareArticleConverter figshareArticleConverter;
     private final AwsSnsPublisher publisher;
 
     @Autowired
-    public FigshareScraper(BrowserAutomatorImpl browserAutomator,
+    public FigshareScraper(FigshareConfiguration figshareConfiguration,
+                           BrowserAutomatorImpl browserAutomator,
                            FigshareArticleConverter figshareArticleConverter,
                            AwsSnsPublisher publisher) {
+        this.figshareConfiguration = figshareConfiguration;
         this.browserAutomator = browserAutomator;
         this.figshareArticleConverter = figshareArticleConverter;
         this.publisher = publisher;
@@ -38,9 +40,9 @@ public class FigshareScraper {
 
     public void runScraper() {
         //Debugging
-        log.info("finished waiting, going to page: " + FIGSHARE_SEARCH_TERM_URL);
+        log.info("finished waiting, going to page: " + figshareConfiguration.getQueryUrl());
         log.info("starting get");
-        browserAutomator.getWebDriver().get(FIGSHARE_SEARCH_TERM_URL);
+        browserAutomator.getWebDriver().get(figshareConfiguration.getQueryUrl());
         log.info("waiting for article divs");
         String selector = "div[role=article]";
         browserAutomator.waitByCssSelector(browserAutomator.getWebDriver(), selector);
@@ -62,7 +64,7 @@ public class FigshareScraper {
     }
 
     private Set<Article> fetchNewArticlesByBatch(BrowserAutomatorImpl browserAutomator, Set<WebElement> existingList, Set<Article> articles) {
-        if (articles.size() > FETCH_LIMIT) {
+        if (articles.size() > figshareConfiguration.getFetchLimit()) {
             log.info("fetch limit exceeded");
             return articles;
         }
