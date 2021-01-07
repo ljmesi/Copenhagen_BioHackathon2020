@@ -16,5 +16,11 @@ import org.springframework.stereotype.Component;
 @NoArgsConstructor
 public class MendeleyConfiguration {
     @JsonProperty
-    private String queryUrl;
+    private String host;
+    @JsonProperty
+    private String endPoint;
+    @JsonProperty
+    private String searchQuery;
+    @JsonProperty
+    private String type;
 }
