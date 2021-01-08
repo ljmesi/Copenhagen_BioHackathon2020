@@ -9,6 +9,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.perpetualnetworks.mdcrawler.config.MendeleyConfiguration;
 import org.perpetualnetworks.mdcrawler.converters.MendeleyArticleConverter;
+import org.perpetualnetworks.mdcrawler.publishers.AwsSnsPublisher;
 import org.perpetualnetworks.mdcrawler.scrapers.dto.MendeleyResponse;
 import org.springframework.stereotype.Component;
 
@@ -22,14 +23,17 @@ public class MendeleyScraper {
     private final OkHttpClient client;
     private final MendeleyConfiguration mendeleyConfiguration;
     private final MendeleyArticleConverter mendeleyArticleConverter;
+    private final AwsSnsPublisher publisher;
     private final ObjectMapper mapper;
 
     public MendeleyScraper(OkHttpClient client,
                            MendeleyConfiguration mendeleyConfiguration,
-                           MendeleyArticleConverter mendeleyArticleConverter) {
+                           MendeleyArticleConverter mendeleyArticleConverter,
+                           AwsSnsPublisher publisher) {
         this.client = client;
         this.mendeleyConfiguration = mendeleyConfiguration;
         this.mendeleyArticleConverter = mendeleyArticleConverter;
+        this.publisher = publisher;
         this.mapper = new ObjectMapper();
     }
 
@@ -83,6 +87,12 @@ public class MendeleyScraper {
                     log.info("current size: " + responses.size());
                 });
         return responses;
+    }
+    public void runScraper() {
+        fetchAll().stream().map(MendeleyResponse::getResults)
+                .flatMap(List::stream)
+                .map(mendeleyArticleConverter::convert)
+                .forEach(publisher::sendArticle);
     }
 
 }

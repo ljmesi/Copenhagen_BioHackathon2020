@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -41,6 +42,8 @@ public class Article {
     public static class AdditionalData {
         @JsonProperty
         private String figshareType;
+        @JsonProperty
+        private List<String> labDetails;
     }
 
 }
